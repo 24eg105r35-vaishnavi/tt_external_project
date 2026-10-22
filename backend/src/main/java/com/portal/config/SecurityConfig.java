@@ -1,6 +1,9 @@
 package com.portal.config;
 
 import com.portal.security.CustomUserDetailsService;
+import com.portal.security.JwtAccessDeniedHandler;
+import com.portal.security.JwtAuthenticationEntryPoint;
+import com.portal.security.JwtFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +15,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -23,6 +27,18 @@ public class SecurityConfig {
 
     @Value("${app.frontend-url:http://localhost:5173}")
     private String frontendUrl;
+
+    private final JwtFilter jwtFilter;
+    private final JwtAuthenticationEntryPoint authEntryPoint;
+    private final JwtAccessDeniedHandler accessDeniedHandler;
+
+    public SecurityConfig(JwtFilter jwtFilter,
+                          JwtAuthenticationEntryPoint authEntryPoint,
+                          JwtAccessDeniedHandler accessDeniedHandler) {
+        this.jwtFilter = jwtFilter;
+        this.authEntryPoint = authEntryPoint;
+        this.accessDeniedHandler = accessDeniedHandler;
+    }
 
     // password encoder bean using BCrypt
     @Bean
@@ -67,7 +83,12 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(authEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler)
+            )
             .authenticationProvider(authProvider)
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/health", "/api/auth/**", "/api/public/**").permitAll()
                 .requestMatchers("/api/student/**").hasRole("STUDENT")

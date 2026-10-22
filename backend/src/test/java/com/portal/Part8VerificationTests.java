@@ -320,9 +320,8 @@ public class Part8VerificationTests {
                 .andExpect(status().is5xxServerError());
 
         com.portal.controller.GlobalExceptionHandler handler = new com.portal.controller.GlobalExceptionHandler();
-        org.springframework.ui.ConcurrentModel model = new org.springframework.ui.ConcurrentModel();
-        String view = handler.handleProfileNotFound(new com.portal.util.ProfileNotFoundException("Not found"), model);
-        assertEquals("error/404", view);
-        assertEquals("Not found", model.getAttribute("errorMessage"));
+        org.springframework.http.ResponseEntity<java.util.Map<String, Object>> response = handler.handleProfileNotFound(new com.portal.util.ProfileNotFoundException("Not found"));
+        assertEquals(404, response.getStatusCode().value());
+        assertEquals("Not found", response.getBody().get("message"));
     }
 }
