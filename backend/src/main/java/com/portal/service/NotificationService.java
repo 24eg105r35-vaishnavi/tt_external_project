@@ -69,4 +69,17 @@ public class NotificationService {
             notificationRepository.save(n);
         }
     }
+
+    // weekly digest running every Monday at 9am logging unread counts per user
+    @org.springframework.scheduling.annotation.Scheduled(cron = "0 0 9 * * MON")
+    @Transactional(readOnly = true)
+    public void logWeeklyNotificationDigest() {
+        List<User> users = userRepository.findAll();
+        for (User u : users) {
+            long count = notificationRepository.countByUserAndIsReadFalse(u);
+            if (count > 0) {
+                System.out.println("[WEEKLY DIGEST] Student " + u.getEmail() + " has " + count + " unread notifications.");
+            }
+        }
+    }
 }

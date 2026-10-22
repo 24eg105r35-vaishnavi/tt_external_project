@@ -19,6 +19,10 @@
                 You have been successfully logged out.
             </div>
 
+            <div th:if="${param.locked}" class="alert alert-danger">
+                Account locked, try later
+            </div>
+
             <div th:if="${param.registered}" class="alert alert-success">
                 Registration successful! Please sign in with your credentials.
             </div>

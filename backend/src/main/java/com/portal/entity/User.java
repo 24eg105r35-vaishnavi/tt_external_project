@@ -41,6 +41,10 @@ public class User {
 
     private boolean enabled = true;
 
+    private int failedAttempts = 0;
+
+    private LocalDateTime lockUntil;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     // Fetch role eagerly so that user.getRole() is always available during authentication
@@ -102,5 +106,21 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public int getFailedAttempts() {
+        return failedAttempts;
+    }
+
+    public void setFailedAttempts(int failedAttempts) {
+        this.failedAttempts = failedAttempts;
+    }
+
+    public LocalDateTime getLockUntil() {
+        return lockUntil;
+    }
+
+    public void setLockUntil(LocalDateTime lockUntil) {
+        this.lockUntil = lockUntil;
     }
 }

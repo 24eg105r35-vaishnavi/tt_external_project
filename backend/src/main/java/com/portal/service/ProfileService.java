@@ -131,6 +131,7 @@ public class ProfileService {
         dto.setBranch(student.getBranch());
         dto.setYear(student.getYear());
         dto.setTotalPoints(totalPoints);
+        dto.setVisibility(student.getVisibility());
         dto.setCategoryCounts(categoryCounts);
         dto.setGroupedAchievements(groupedAchievements);
 

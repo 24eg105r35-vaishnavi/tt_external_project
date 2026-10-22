@@ -115,5 +115,76 @@ public interface AchievementRepository extends JpaRepository<Achievement, Long> 
             @Param("fromDate") java.time.LocalDate fromDate,
             @Param("toDate") java.time.LocalDate toDate,
             org.springframework.data.domain.Pageable pageable);
+
+    // Part 8: Analytics queries (APPROVED only, optional date range)
+    @Query("SELECT c.name, COUNT(a) FROM Achievement a " +
+           "JOIN a.category c " +
+           "WHERE a.status = com.portal.entity.Status.APPROVED " +
+           "AND (:fromDate IS NULL OR a.eventDate >= :fromDate) " +
+           "AND (:toDate IS NULL OR a.eventDate <= :toDate) " +
+           "GROUP BY c.name ORDER BY COUNT(a) DESC")
+    List<Object[]> countApprovedByCategory(@Param("fromDate") java.time.LocalDate fromDate,
+                                           @Param("toDate") java.time.LocalDate toDate);
+
+    @Query("SELECT s.branch, COUNT(a) FROM Achievement a " +
+           "JOIN a.student s " +
+           "WHERE a.status = com.portal.entity.Status.APPROVED " +
+           "AND (:fromDate IS NULL OR a.eventDate >= :fromDate) " +
+           "AND (:toDate IS NULL OR a.eventDate <= :toDate) " +
+           "GROUP BY s.branch ORDER BY COUNT(a) DESC")
+    List<Object[]> countApprovedByBranch(@Param("fromDate") java.time.LocalDate fromDate,
+                                         @Param("toDate") java.time.LocalDate toDate);
+
+    @Query("SELECT a.level, COUNT(a) FROM Achievement a " +
+           "WHERE a.status = com.portal.entity.Status.APPROVED " +
+           "AND (:fromDate IS NULL OR a.eventDate >= :fromDate) " +
+           "AND (:toDate IS NULL OR a.eventDate <= :toDate) " +
+           "GROUP BY a.level ORDER BY COUNT(a) DESC")
+    List<Object[]> countApprovedByLevel(@Param("fromDate") java.time.LocalDate fromDate,
+                                        @Param("toDate") java.time.LocalDate toDate);
+
+    @Query("SELECT YEAR(a.eventDate), COUNT(a) FROM Achievement a " +
+           "WHERE a.status = com.portal.entity.Status.APPROVED " +
+           "AND (:fromDate IS NULL OR a.eventDate >= :fromDate) " +
+           "AND (:toDate IS NULL OR a.eventDate <= :toDate) " +
+           "GROUP BY YEAR(a.eventDate) ORDER BY YEAR(a.eventDate) DESC")
+    List<Object[]> countApprovedByEventYear(@Param("fromDate") java.time.LocalDate fromDate,
+                                            @Param("toDate") java.time.LocalDate toDate);
+
+    @Query("SELECT COUNT(a) FROM Achievement a " +
+           "WHERE a.status = com.portal.entity.Status.APPROVED " +
+           "AND (:fromDate IS NULL OR a.eventDate >= :fromDate) " +
+           "AND (:toDate IS NULL OR a.eventDate <= :toDate)")
+    long countTotalApproved(@Param("fromDate") java.time.LocalDate fromDate,
+                            @Param("toDate") java.time.LocalDate toDate);
+
+    @Query("SELECT COUNT(DISTINCT a.student) FROM Achievement a " +
+           "WHERE a.status = com.portal.entity.Status.APPROVED " +
+           "AND (:fromDate IS NULL OR a.eventDate >= :fromDate) " +
+           "AND (:toDate IS NULL OR a.eventDate <= :toDate)")
+    long countStudentsWithApproved(@Param("fromDate") java.time.LocalDate fromDate,
+                                   @Param("toDate") java.time.LocalDate toDate);
+
+    @Query("SELECT COALESCE(SUM(a.pointsAwarded), 0) FROM Achievement a " +
+           "WHERE a.status = com.portal.entity.Status.APPROVED " +
+           "AND (:fromDate IS NULL OR a.eventDate >= :fromDate) " +
+           "AND (:toDate IS NULL OR a.eventDate <= :toDate)")
+    long sumTotalPointsAwarded(@Param("fromDate") java.time.LocalDate fromDate,
+                               @Param("toDate") java.time.LocalDate toDate);
+
+    // Part 8: Leaderboard query (Top students by points, excluding PRIVATE profiles)
+    @Query("SELECT u.fullName, s.branch, s.year, SUM(a.pointsAwarded), COUNT(a) " +
+           "FROM Achievement a " +
+           "JOIN a.student s " +
+           "JOIN s.user u " +
+           "WHERE a.status = com.portal.entity.Status.APPROVED " +
+           "AND s.visibility <> com.portal.entity.Visibility.PRIVATE " +
+           "AND (:branch IS NULL OR :branch = '' OR s.branch = :branch) " +
+           "AND (:year IS NULL OR s.year = :year) " +
+           "GROUP BY s.id, u.fullName, s.branch, s.year " +
+           "ORDER BY SUM(a.pointsAwarded) DESC, COUNT(a) DESC")
+    List<Object[]> findTopStudentsLeaderboard(@Param("branch") String branch,
+                                             @Param("year") Integer year,
+                                             org.springframework.data.domain.Pageable pageable);
 }
 

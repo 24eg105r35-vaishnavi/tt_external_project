@@ -15,6 +15,7 @@ public class PublicProfileDto {
     private String branch;
     private int year;
     private int totalPoints;
+    private com.portal.entity.Visibility visibility;
     private Map<String, Integer> categoryCounts;
     private Map<String, List<PublicAchievementDto>> groupedAchievements;
 
@@ -56,6 +57,14 @@ public class PublicProfileDto {
 
     public void setCategoryCounts(Map<String, Integer> categoryCounts) {
         this.categoryCounts = categoryCounts;
+    }
+
+    public com.portal.entity.Visibility getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(com.portal.entity.Visibility visibility) {
+        this.visibility = visibility;
     }
 
     public Map<String, List<PublicAchievementDto>> getGroupedAchievements() {

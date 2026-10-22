@@ -84,26 +84,36 @@ public class DataSeeder implements CommandLineRunner {
         System.out.println("Seeded/Verified 6 categories with verifier departments");
 
         // 3. Seed/Verify Default Admin User
-        // Login: admin@anurag.edu.in | Password: admin123
+        // Reads from ADMIN_DEFAULT_PASSWORD environment variable or defaults to admin123
+        String adminPass = System.getenv("ADMIN_DEFAULT_PASSWORD");
+        if (adminPass == null || adminPass.trim().isEmpty()) {
+            adminPass = "admin123";
+        }
+
         Role adminRole = roleRepository.findByName("ADMIN").orElse(null);
         if (adminRole != null) {
             User admin = userRepository.findByEmail("admin@anurag.edu.in").orElse(new User());
             admin.setEmail("admin@anurag.edu.in");
-            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.setPassword(passwordEncoder.encode(adminPass));
             admin.setFullName("System Administrator");
             admin.setEnabled(true);
             admin.setRole(adminRole);
             userRepository.save(admin);
-            System.out.println("Seeded/Verified Admin: admin@anurag.edu.in (Password: admin123)");
+            System.out.println("Seeded/Verified Admin: admin@anurag.edu.in");
         }
 
         // 4. Seed/Verify Default Faculty User and Faculty Profile (CSE Department)
-        // Login: faculty@anurag.edu.in | Password: faculty123
+        // Reads from FACULTY_DEFAULT_PASSWORD environment variable or defaults to faculty123
+        String facultyPass = System.getenv("FACULTY_DEFAULT_PASSWORD");
+        if (facultyPass == null || facultyPass.trim().isEmpty()) {
+            facultyPass = "faculty123";
+        }
+
         Role facultyRole = roleRepository.findByName("FACULTY").orElse(null);
         if (facultyRole != null) {
             User facultyUser = userRepository.findByEmail("faculty@anurag.edu.in").orElse(new User());
             facultyUser.setEmail("faculty@anurag.edu.in");
-            facultyUser.setPassword(passwordEncoder.encode("faculty123"));
+            facultyUser.setPassword(passwordEncoder.encode(facultyPass));
             facultyUser.setFullName("Dr. Ramesh Sharma");
             facultyUser.setEnabled(true);
             facultyUser.setRole(facultyRole);
@@ -117,10 +127,9 @@ public class DataSeeder implements CommandLineRunner {
             System.out.println("Seeded/Verified Faculty: faculty@anurag.edu.in (Dept: Computer Science and Engineering)");
 
             // Seed Second Faculty: Physical Education department
-            // Login: sports_faculty@anurag.edu.in | Password: faculty123
             User sportsFacultyUser = userRepository.findByEmail("sports_faculty@anurag.edu.in").orElse(new User());
             sportsFacultyUser.setEmail("sports_faculty@anurag.edu.in");
-            sportsFacultyUser.setPassword(passwordEncoder.encode("faculty123"));
+            sportsFacultyUser.setPassword(passwordEncoder.encode(facultyPass));
             sportsFacultyUser.setFullName("Prof. Suresh Kumar");
             sportsFacultyUser.setEnabled(true);
             sportsFacultyUser.setRole(facultyRole);

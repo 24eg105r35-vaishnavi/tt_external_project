@@ -51,19 +51,47 @@ public class SecurityConfig {
         };
     }
 
+    // custom failure handler to detect locked account vs invalid credentials
+    @Bean
+    public org.springframework.security.web.authentication.AuthenticationFailureHandler customFailureHandler(com.portal.repository.UserRepository userRepository) {
+        return (request, response, exception) -> {
+            String email = request.getParameter("email");
+            if (email != null && !email.trim().isEmpty()) {
+                com.portal.entity.User user = userRepository.findByEmail(email.trim().toLowerCase()).orElse(null);
+                if (user != null && user.getLockUntil() != null && user.getLockUntil().isAfter(java.time.LocalDateTime.now())) {
+                    response.sendRedirect("/login?locked=true");
+                    return;
+                }
+            }
+            if (exception instanceof org.springframework.security.authentication.LockedException) {
+                response.sendRedirect("/login?locked=true");
+                return;
+            }
+            response.sendRedirect("/login?error=true");
+        };
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   DaoAuthenticationProvider authProvider) throws Exception {
+                                                   DaoAuthenticationProvider authProvider,
+                                                   com.portal.repository.UserRepository userRepository) throws Exception {
         http
             .authenticationProvider(authProvider)
+            // security headers
+            .headers(headers -> headers
+                .contentTypeOptions(contentType -> {}) // X-Content-Type-Options: nosniff
+                .frameOptions(frame -> frame.deny())   // X-Frame-Options: DENY
+                .referrerPolicy(referrer -> referrer.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+            )
             // role-based endpoint protection
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/register", "/error", "/css/**", "/js/**", "/images/**", "/u/**").permitAll()
+                .requestMatchers("/", "/login", "/register", "/error", "/css/**", "/js/**", "/images/**", "/u/**", "/robots.txt", "/sitemap.xml").permitAll()
                 .requestMatchers("/student/**").hasRole("STUDENT")
                 .requestMatchers("/faculty/**").hasRole("FACULTY")
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/analytics/**").hasAnyRole("FACULTY", "ADMIN")
                 .requestMatchers("/search/**", "/export/**").hasAnyRole("FACULTY", "ADMIN")
-                .requestMatchers("/notifications/**").authenticated()
+                .requestMatchers("/leaderboard/**", "/notifications/**").authenticated()
                 .anyRequest().authenticated()
             )
             // custom login page configuration
@@ -73,7 +101,7 @@ public class SecurityConfig {
                 .usernameParameter("email")
                 .passwordParameter("password")
                 .successHandler(customSuccessHandler())
-                .failureUrl("/login?error=true")
+                .failureHandler(customFailureHandler(userRepository))
                 .permitAll()
             )
             // logout configuration

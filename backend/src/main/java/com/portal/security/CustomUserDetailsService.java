@@ -36,6 +36,18 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("User account is disabled");
         }
 
+        // check if user account is locked
+        if (user.getLockUntil() != null) {
+            if (user.getLockUntil().isAfter(java.time.LocalDateTime.now())) {
+                throw new org.springframework.security.authentication.LockedException("Account locked, try later");
+            } else {
+                // lock duration has expired, reset attempts and lock
+                user.setFailedAttempts(0);
+                user.setLockUntil(null);
+                userRepository.save(user);
+            }
+        }
+
         // Spring Security expects roles to start with ROLE_
         String roleName = "ROLE_" + user.getRole().getName();
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority(roleName);

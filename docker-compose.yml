@@ -13,7 +13,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -37,6 +37,9 @@ services:
       DB_USER: ${DB_USER:-portal_user}
       DB_PASSWORD: ${DB_PASSWORD:-portal_pass123}
       UPLOAD_DIR: /app/uploads
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8080}
+      ADMIN_DEFAULT_PASSWORD: ${ADMIN_DEFAULT_PASSWORD:-admin123}
+      FACULTY_DEFAULT_PASSWORD: ${FACULTY_DEFAULT_PASSWORD:-faculty123}
     volumes:
       - app_uploads:/app/uploads
 

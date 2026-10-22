@@ -21,9 +21,15 @@ import java.security.Principal;
 public class ProfileController {
 
     private final ProfileService profileService;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
-    public ProfileController(ProfileService profileService) {
+    @org.springframework.beans.factory.annotation.Value("${app.base-url:http://localhost:8080}")
+    private String baseUrl;
+
+    public ProfileController(ProfileService profileService,
+                             com.fasterxml.jackson.databind.ObjectMapper objectMapper) {
         this.profileService = profileService;
+        this.objectMapper = objectMapper;
     }
 
     // Public profile view: accessible publicly (rule checked in ProfileService)
@@ -33,8 +39,59 @@ public class ProfileController {
                                     Model model) {
         String viewerEmail = (principal != null) ? principal.getName() : null;
         PublicProfileDto profile = profileService.getPublicProfile(slug, viewerEmail);
+
+        String title = profile.getFullName() + " - " + profile.getBranch() + " - Anurag University | Verified Achievements";
+        String description = "Verified achievements portfolio of " + profile.getFullName() + ", " + profile.getBranch() + " at Anurag University.";
+        String cleanBase = (baseUrl != null) ? baseUrl.replaceAll("/$", "") : "http://localhost:8080";
+        String canonicalUrl = cleanBase + "/u/" + slug;
+
         model.addAttribute("profile", profile);
         model.addAttribute("slug", slug);
+        model.addAttribute("pageTitle", title);
+        model.addAttribute("metaDescription", description);
+        model.addAttribute("ogTitle", title);
+        model.addAttribute("ogDescription", description);
+        model.addAttribute("ogType", "profile");
+        model.addAttribute("canonicalUrl", canonicalUrl);
+
+        if (profile.getVisibility() == Visibility.PUBLIC) {
+            model.addAttribute("metaRobots", "index, follow");
+        } else {
+            model.addAttribute("metaRobots", "noindex");
+        }
+
+        // JSON-LD script of type Person with verified achievements listed
+        try {
+            java.util.Map<String, Object> personJson = new java.util.LinkedHashMap<>();
+            personJson.put("@context", "https://schema.org");
+            personJson.put("@type", "Person");
+            personJson.put("name", profile.getFullName());
+            personJson.put("affiliation", "Anurag University");
+            personJson.put("jobTitle", "Student - " + profile.getBranch());
+            personJson.put("url", canonicalUrl);
+
+            java.util.List<java.util.Map<String, Object>> awards = new java.util.ArrayList<>();
+            if (profile.getGroupedAchievements() != null) {
+                for (java.util.List<com.portal.dto.PublicAchievementDto> list : profile.getGroupedAchievements().values()) {
+                    for (com.portal.dto.PublicAchievementDto item : list) {
+                        java.util.Map<String, Object> award = new java.util.LinkedHashMap<>();
+                        award.put("@type", "Achievement");
+                        award.put("name", item.getTitle());
+                        award.put("category", item.getCategoryName());
+                        award.put("level", item.getLevel());
+                        if (item.getEventDate() != null) {
+                            award.put("dateCreated", item.getEventDate().toString());
+                        }
+                        awards.add(award);
+                    }
+                }
+            }
+            personJson.put("hasCredential", awards);
+            String jsonLd = objectMapper.writeValueAsString(personJson);
+            model.addAttribute("jsonLd", jsonLd);
+        } catch (Exception ignored) {
+        }
+
         return "profile/public";
     }
 

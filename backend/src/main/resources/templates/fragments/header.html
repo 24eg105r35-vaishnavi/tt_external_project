@@ -44,6 +44,12 @@
                 <li sec:authorize="hasAnyRole('FACULTY', 'ADMIN')">
                     <a th:href="@{/search}">Search</a>
                 </li>
+                <li sec:authorize="hasAnyRole('FACULTY', 'ADMIN')">
+                    <a th:href="@{/analytics}">Analytics</a>
+                </li>
+                <li sec:authorize="isAuthenticated()">
+                    <a th:href="@{/leaderboard}">Leaderboard</a>
+                </li>
 
                 <!-- Notifications with unread badge for logged in users -->
                 <li sec:authorize="isAuthenticated()">
