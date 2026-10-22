@@ -17,7 +17,7 @@ export default function TopStrip() {
       <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <CrestIcon />
-          <span style={{ fontWeight: 600, letterSpacing: '0.02em' }}>Anurag University</span>
+          <span style={{ fontWeight: 600, letterSpacing: '0.02em' }}>National Institute of Technology</span>
           <span style={{ margin: '0 8px', opacity: 0.5 }}>|</span>
           <span style={{ opacity: 0.85 }}>Student Achievement & Verification System</span>
         </div>

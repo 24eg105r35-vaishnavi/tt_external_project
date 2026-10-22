@@ -3,37 +3,41 @@ package com.portal.controller;
 import com.portal.dto.LeaderboardRowDto;
 import com.portal.repository.AchievementRepository;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-@Controller
-public class LeaderboardController {
+@RestController
+@RequestMapping("/api/leaderboard")
+public class LeaderboardRestController {
 
     private final AchievementRepository achievementRepository;
 
-    public LeaderboardController(AchievementRepository achievementRepository) {
+    private final List<String> branches = Arrays.asList("CSE", "ECE", "EEE", "MECH", "CIVIL", "IT", "AI&DS");
+    private final List<Integer> years = Arrays.asList(1, 2, 3, 4);
+
+    public LeaderboardRestController(AchievementRepository achievementRepository) {
         this.achievementRepository = achievementRepository;
     }
 
-    @GetMapping("/leaderboard")
-    public String showLeaderboard(@RequestParam(value = "branch", required = false) String branch,
-                                  @RequestParam(value = "year", required = false) Integer year,
-                                  Model model) {
-
-        // normalize empty branch string to null
+    // public leaderboard of top verified student achievers (excluding PRIVATE profiles)
+    @GetMapping
+    public ResponseEntity<Map<String, Object>> getLeaderboard(@RequestParam(value = "branch", required = false) String branch,
+                                                              @RequestParam(value = "year", required = false) Integer year) {
         String normalizedBranch = (branch != null && !branch.trim().isEmpty()) ? branch.trim() : null;
 
-        // query top 10 students by approved points, skipping PRIVATE profiles
         List<Object[]> rawRows = achievementRepository.findTopStudentsLeaderboard(
                 normalizedBranch,
                 year,
-                PageRequest.of(0, 10)
+                PageRequest.of(0, 20)
         );
 
         List<LeaderboardRowDto> leaderboard = new ArrayList<>();
@@ -48,12 +52,13 @@ public class LeaderboardController {
             leaderboard.add(new LeaderboardRowDto(rank++, fullName, studentBranch, studentYear, totalPoints, achievementCount));
         }
 
-        model.addAttribute("leaderboard", leaderboard);
-        model.addAttribute("selectedBranch", normalizedBranch);
-        model.addAttribute("selectedYear", year);
-        model.addAttribute("branches", Arrays.asList("CSE", "ECE", "EEE", "MECH", "CIVIL", "IT", "AI&DS"));
-        model.addAttribute("years", Arrays.asList(1, 2, 3, 4));
+        Map<String, Object> response = new HashMap<>();
+        response.put("leaderboard", leaderboard);
+        response.put("branches", branches);
+        response.put("years", years);
+        response.put("selectedBranch", normalizedBranch);
+        response.put("selectedYear", year);
 
-        return "leaderboard/list";
+        return ResponseEntity.ok(response);
     }
 }

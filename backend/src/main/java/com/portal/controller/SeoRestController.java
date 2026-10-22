@@ -4,29 +4,27 @@ import com.portal.entity.Student;
 import com.portal.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Controller
-public class SeoController {
+@RestController
+public class SeoRestController {
 
-    @Value("${app.base-url:http://localhost:8080}")
-    private String baseUrl;
+    @Value("${app.frontend-url:http://localhost:5173}")
+    private String frontendUrl;
 
     private final StudentRepository studentRepository;
 
-    public SeoController(StudentRepository studentRepository) {
+    public SeoRestController(StudentRepository studentRepository) {
         this.studentRepository = studentRepository;
     }
 
     // robots.txt allows public portfolios and sitemap, blocks private and protected routes
     @GetMapping(value = "/robots.txt", produces = MediaType.TEXT_PLAIN_VALUE)
-    @ResponseBody
     public String getRobotsTxt() {
-        String cleanBase = baseUrl != null ? baseUrl.replaceAll("/$", "") : "http://localhost:8080";
+        String cleanBase = frontendUrl != null ? frontendUrl.replaceAll("/$", "") : "http://localhost:5173";
         StringBuilder sb = new StringBuilder();
         sb.append("User-agent: *\n");
         sb.append("Allow: /\n");
@@ -43,9 +41,8 @@ public class SeoController {
 
     // sitemap.xml dynamically lists only students with PUBLIC visibility and >= 1 approved achievement
     @GetMapping(value = "/sitemap.xml", produces = MediaType.APPLICATION_XML_VALUE)
-    @ResponseBody
     public String getSitemapXml() {
-        String cleanBase = baseUrl != null ? baseUrl.replaceAll("/$", "") : "http://localhost:8080";
+        String cleanBase = frontendUrl != null ? frontendUrl.replaceAll("/$", "") : "http://localhost:5173";
         List<Student> students = studentRepository.findPublicStudentsWithApprovedAchievements();
 
         StringBuilder sb = new StringBuilder();

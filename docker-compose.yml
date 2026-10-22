@@ -40,7 +40,7 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
       APP_JWT_SECRET: ${APP_JWT_SECRET:-StudentAchievementPortalSecretKeyForJwtSigningMustBeAtLeast256BitsLong2026}
       APP_JWT_EXPIRY: ${APP_JWT_EXPIRY:-2}
-      APP_ALLOWED_DOMAIN: ${APP_ALLOWED_DOMAIN:-@anurag.edu.in}
+      APP_ALLOWED_DOMAIN: ${APP_ALLOWED_DOMAIN:-@college.edu}
       ADMIN_DEFAULT_PASSWORD: ${ADMIN_DEFAULT_PASSWORD:-admin123}
       FACULTY_DEFAULT_PASSWORD: ${FACULTY_DEFAULT_PASSWORD:-faculty123}
     volumes:

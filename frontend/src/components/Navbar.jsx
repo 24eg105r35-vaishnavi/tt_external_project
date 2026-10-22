@@ -1,13 +1,28 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { user, logout, isAuthenticated } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const role = user?.role ? user.role.replace('ROLE_', '') : null;
+
+  useEffect(() => {
+    if (user) {
+      api.get('/notifications/unread-count')
+        .then((res) => {
+          setUnreadCount(res.data.unreadCount || 0);
+        })
+        .catch(() => {});
+    } else {
+      setUnreadCount(0);
+    }
+  }, [user, location.pathname]);
 
   function handleLogout() {
     logout();
@@ -21,22 +36,14 @@ export default function Navbar() {
           <span>🎓</span> Achievement Portal
         </Link>
 
-        {/* Mobile menu toggle button */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle navigation"
-          style={{ display: 'none', background: 'none', border: '1px solid var(--border)', borderRadius: '6px', padding: '6px 10px', fontSize: '1.1rem' }}
-          className="mobile-toggle"
-        >
-          ☰
-        </button>
-
         {/* Desktop Navigation Links */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <Link to="/" style={{ fontWeight: 500 }}>Home</Link>
 
           {!user && (
             <>
+              <Link to="/leaderboard" style={{ fontWeight: 500 }}>Leaderboard</Link>
+              <Link to="/analytics" style={{ fontWeight: 500 }}>Analytics</Link>
               <Link to="/login" style={{ fontWeight: 500 }}>Login</Link>
               <Link to="/register" style={{ fontWeight: 500, backgroundColor: 'var(--indigo-600)', color: '#fff', padding: '6px 14px', borderRadius: '6px' }}>Register</Link>
             </>
@@ -48,6 +55,7 @@ export default function Navbar() {
               <Link to="/student/achievements" style={{ fontWeight: 500 }}>My Uploads</Link>
               <Link to="/student/upload" style={{ fontWeight: 500, color: 'var(--indigo-600)' }}>+ Upload</Link>
               <Link to="/student/profile" style={{ fontWeight: 500 }}>Profile</Link>
+              <Link to="/search" style={{ fontWeight: 500 }}>Search</Link>
             </>
           )}
 
@@ -63,6 +71,9 @@ export default function Navbar() {
           {role === 'ADMIN' && (
             <>
               <Link to="/admin/dashboard" style={{ fontWeight: 500 }}>Admin Console</Link>
+              <Link to="/admin/categories" style={{ fontWeight: 500 }}>Categories</Link>
+              <Link to="/admin/users" style={{ fontWeight: 500 }}>Users</Link>
+              <Link to="/admin/audit" style={{ fontWeight: 500 }}>Audit Logs</Link>
               <Link to="/search" style={{ fontWeight: 500 }}>Search</Link>
               <Link to="/analytics" style={{ fontWeight: 500 }}>Analytics</Link>
             </>
@@ -71,8 +82,21 @@ export default function Navbar() {
           {user && (
             <>
               <Link to="/leaderboard" style={{ fontWeight: 500 }}>Leaderboard</Link>
-              <Link to="/notifications" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500 }}>
-                Notifications
+              <Link to="/notifications" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 500 }}>
+                <span>Notifications</span>
+                {unreadCount > 0 && (
+                  <span style={{
+                    backgroundColor: 'var(--danger)',
+                    color: '#fff',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    padding: '1px 6px',
+                    borderRadius: '999px',
+                    lineHeight: '1.2'
+                  }}>
+                    {unreadCount}
+                  </span>
+                )}
               </Link>
               <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>({user.fullName || user.email})</span>
               <button

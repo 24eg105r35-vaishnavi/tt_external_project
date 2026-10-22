@@ -90,10 +90,11 @@ public class SecurityConfig {
             .authenticationProvider(authProvider)
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/health", "/api/auth/**", "/api/public/**").permitAll()
+                .requestMatchers("/api/health", "/api/auth/**", "/api/public/**", "/sitemap.xml", "/robots.txt", "/api/leaderboard/**", "/api/analytics/**").permitAll()
                 .requestMatchers("/api/student/**").hasRole("STUDENT")
                 .requestMatchers("/api/faculty/**").hasRole("FACULTY")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/documents/**", "/api/notifications/**", "/api/search/**", "/api/export/**").authenticated()
                 .anyRequest().permitAll()
             );
 

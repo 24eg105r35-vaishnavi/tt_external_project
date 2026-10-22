@@ -26,7 +26,7 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${app.allowed-domain:@anurag.edu.in}")
+    @Value("${app.allowed-domain:@college.edu}")
     private String allowedDomain;
 
     public UserService(UserRepository userRepository,
@@ -44,7 +44,10 @@ public class UserService {
         String email = dto.getEmail().trim().toLowerCase();
 
         // 1. check college domain
-        if (!email.endsWith(allowedDomain.toLowerCase())) {
+        boolean validDomain = email.endsWith(allowedDomain.toLowerCase())
+                || email.endsWith("@college.edu")
+                || email.endsWith("@anurag.edu.in");
+        if (!validDomain) {
             throw new RegistrationException("Only college emails ending with " + allowedDomain + " are allowed.");
         }
 

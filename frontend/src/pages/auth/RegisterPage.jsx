@@ -121,7 +121,7 @@ export default function RegisterPage() {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="e.g. yourname@anurag.edu.in"
+              placeholder="e.g. yourname@college.edu"
               required
               style={{
                 width: '100%',

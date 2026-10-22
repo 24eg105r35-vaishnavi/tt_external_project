@@ -49,7 +49,7 @@ export default function HomePage() {
             fontWeight: 600,
             marginBottom: '12px'
           }}>
-            Anurag University Portal
+            National Institute of Technology
           </div>
           <h1 style={{ fontSize: '2.2rem', color: 'var(--navy-900)', marginBottom: '8px' }}>
             Student Achievement Portal

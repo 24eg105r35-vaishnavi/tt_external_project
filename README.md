@@ -1,70 +1,68 @@
 # Student Achievement Portal
 
-A full-stack web application built with Spring Boot 3, Java 17, Thymeleaf, Spring Security, and MySQL. It enables students to upload proof of their achievements, allows faculty to verify them through department-routed queues, awards verified points, generates shareable public portfolios with SEO tags, displays college-wide leaderboards and analytics, and provides an administrative management console.
+A full-stack web application designed for educational institutions (e.g., National Institute of Technology) built with a decoupled architecture:
+- **Backend:** Spring Boot 3.3.4, Java 17, Spring Security + JWT, Spring Data JPA, and MySQL 8. Pure REST API returning JSON under `/api`.
+- **Frontend:** React 18, Vite, React Router v6, Axios, and plain CSS tokens with a subtle, calm theme (Navy, Warm Gold, Soft Slate, `#f7f8fb` background).
+
+Students upload verifiable proof of achievements, faculty verify them through department-routed queues, points are automatically computed, public shareable portfolios are dynamically generated, and college administrators monitor activities through analytics, search, CSV export, and category management.
 
 ---
 
 ## 🛠️ Technology Stack
 
 - **Backend:** Java 17, Spring Boot 3.3.4
-- **Security:** Spring Security 6 (BCrypt, Role-Based Access Control, 5-Attempt Lockout, Security Headers)
+- **Security:** Spring Security 6, JWT Authentication (`Bearer <token>`), BCrypt, Role-Based Access Control, Account Lockout, Security Headers
 - **Database:** MySQL 8.0, Spring Data JPA / Hibernate
-- **Frontend / Templating:** Thymeleaf, Vanilla CSS, Semantic HTML5
-- **Build & Containerization:** Maven 3.9, Docker, Docker Compose
+- **Frontend:** React 18, Vite, React Router v6, Axios, Vanilla CSS Design System (`tokens.css`)
+- **Containerization:** Docker, Docker Compose
 
 ---
 
-## 🚀 Key Features
+## 🚀 Key Features & Completed Phases
 
-1. **Role-Based Authentication (3 Roles):**
-   - **Student:** Upload achievements, resubmit rejected entries, manage privacy settings, view public portfolio.
-   - **Faculty:** Review assigned pending verification queues, approve, reject, or request changes with notes.
-   - **Admin:** Manage dynamic categories, users, verifier department mappings, and view full audit logs.
+1. **Authentication & Role-Based Access (Phases 1-3):**
+   - JWT stateless authentication with auto-refresh / localStorage session handling.
+   - 3 distinct roles: **Student**, **Faculty**, and **Admin**.
+   - Account lockout after 5 consecutive failed login attempts (15-minute freeze).
 
-2. **Proof Document Upload & Verification:**
-   - Multi-category support (Certificates, Hackathons, Paper Publications, Sports, Internships, Competitions) with dynamic JSON extra fields.
-   - Strict file validation: maximum 10MB, extension check, and header magic-byte verification (%PDF, PNG `89 50 4E 47`, JPEG `FF D8 FF`) to prevent spoofed files.
-   - Duplicate prevention using SHA-256 file checksums.
-   - Uploaded files are stored outside static web roots and served only via authenticated endpoints.
+2. **Achievement Upload & Secure Document Management (Phase 4):**
+   - Dynamic schema-driven forms based on category configuration (Hackathons, Research Papers, Sports, Internships, etc.).
+   - Multi-check file validation: 10MB maximum, extension filtering, and header magic-byte verification (PDF, PNG, JPEG).
+   - In-app `DocumentViewer` streaming documents securely through authorized endpoints (`/api/documents/{id}`) with blob URL previews.
 
-3. **Gamification & Points Engine:**
-   - Automatic point calculation based on category base points and participation level (College, State, National, International).
-   - In-app notification badge and notification center alerting students when decisions are recorded.
+3. **Faculty Verification Queue & Student Dashboard (Phase 5):**
+   - Department-routed verification queues for faculty members.
+   - Two-column verification review interface: student details and claims on the left, full document preview on the right, and decision actions (Approve, Reject, Send Back with note).
+   - Real-time student dashboard tracking verified points, pending submissions, approved count, and action-required items.
 
-4. **Public Portfolio & SEO (/u/{slug}):**
-   - Unique vanity URL slugs for every student.
-   - 3 Visibility modes: `PRIVATE` (owner only), `COLLEGE_ONLY` (logged-in users only), and `PUBLIC` (open to the web).
-   - Full SEO optimization: Semantic HTML (`<h1>`, `<h2>`, `<article>`, `<time>`), unique titles, meta descriptions, OpenGraph tags, canonical URLs, and Schema.org `Person` JSON-LD structured data.
-   - Dynamic `/sitemap.xml` listing only public students with approved records and `/robots.txt` disallowing private sections.
+4. **Public Portfolio & Notification System (Phase 6):**
+   - Shareable student portfolios with customizable privacy controls (`PUBLIC`, `COLLEGE_ONLY`, `PRIVATE`).
+   - Clean vanity URLs (`/u/{slug}`) with certificate-style presentation, initials avatar, and achievement breakdown.
+   - In-app notification center with real-time unread badges in the navigation bar.
 
-5. **Analytics & Leaderboard:**
-   - **Analytics (/analytics):** For Faculty and Admin with summary cards, date range filtering, and inline CSS percentage bar charts (no external JavaScript libraries needed).
-   - **Leaderboard (/leaderboard):** Top 10 students ranked by verified points with branch and year filters. Respects privacy by excluding private profiles and hiding sensitive contact info.
+5. **Advanced Search, CSV Export & Admin Console (Phase 7):**
+   - Multi-criteria paged search across achievements, branches, categories, and date ranges.
+   - Secure CSV export with UTF-8 BOM and formula injection protection (`=`, `+`, `-`, `@`).
+   - Comprehensive admin console for managing categories (with dynamic JSON schemas), user accounts, and immutable audit logs.
 
-6. **College Search & CSV Export:**
-   - Filter by keyword, category, branch, year, level, and event date range with pagination.
-   - Safe CSV export with UTF-8 BOM for Microsoft Excel compatibility and sanitization against spreadsheet formula injection (`=`, `+`, `-`, `@`).
-
-7. **Security Polish & Error Pages:**
-   - Account lockout: 5 consecutive failed login attempts locks the account for 15 minutes, logged under `ACCOUNT_LOCKED` in `AuditLog`.
-   - Security headers: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`.
-   - Session cookies configured with `HttpOnly` and `SameSite=Lax`.
-   - Custom friendly error pages (`404.html`, `403.html`, `500.html`) and `@ControllerAdvice` suppressing technical stack traces.
+6. **Analytics, Leaderboard & SEO (Phase 8):**
+   - Interactive analytics dashboard with distribution charts across categories, branches, and levels.
+   - College-wide leaderboard highlighting top student achievers with medal badges (#1 Gold, #2 Silver, #3 Bronze).
+   - Automated SEO endpoints (`/robots.txt` and `/sitemap.xml`) indexing verified public student profiles.
 
 ---
 
 ## 🔑 Pre-seeded Test Accounts
 
-All accounts are pre-seeded on startup. You can customize the default admin and faculty passwords via environment variables.
+All accounts are automatically seeded on startup:
 
-| Role | Email | Default Password | Notes |
+| Role | Email | Password | Details |
 | :--- | :--- | :--- | :--- |
-| **Admin** | `admin@anurag.edu.in` | `admin123` | Full access to Admin Console, Analytics, and Audit Logs |
-| **Faculty 1** | `faculty@anurag.edu.in` | `faculty123` | Computer Science & Engineering (verifies ALL & CSE) |
-| **Faculty 2** | `sports_faculty@anurag.edu.in` | `faculty123` | Physical Education (verifies Sports category) |
-| **Student** | `student@anurag.edu.in` | `student123` | Roll No: `21EG105A01`, CSE, Year 3 |
+| **Admin** | `admin@college.edu` | `admin123` | Full access to Admin Console, Analytics & Audit Logs |
+| **Faculty (CSE)** | `faculty@college.edu` | `faculty123` | Department: Computer Science & Engineering |
+| **Student** | `student@college.edu` | `student123` | Roll No: `21EG105A99`, Branch: CSE, Year: 3 |
 
-> **Security Note:** Change default seeded passwords upon first login.
+*(Legacy accounts with `@anurag.edu.in` domain are also supported for backward compatibility)*.
 
 ---
 
@@ -72,86 +70,46 @@ All accounts are pre-seeded on startup. You can customize the default admin and 
 
 ### Prerequisites
 - Java 17 (JDK)
+- Node.js 18+ and npm
 - Maven 3.8+
 - MySQL 8.0 running on `localhost:3306`
 
-### Steps
-1. Create the MySQL database and user:
-   ```sql
-   CREATE DATABASE IF NOT EXISTS achievement_portal;
-   CREATE USER IF NOT EXISTS 'portal_user'@'localhost' IDENTIFIED BY 'portal_pass123';
-   GRANT ALL PRIVILEGES ON achievement_portal.* TO 'portal_user'@'localhost';
-   FLUSH PRIVILEGES;
-   ```
-2. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-3. Run the Spring Boot application:
-   ```bash
-   mvn spring-boot:run
-   ```
-4. Access the application in your browser at:
-   ```
-   http://localhost:8080
-   ```
+### 1. Database Setup
+```sql
+CREATE DATABASE IF NOT EXISTS achievement_portal;
+CREATE USER IF NOT EXISTS 'portal_user'@'localhost' IDENTIFIED BY 'portal_pass123';
+GRANT ALL PRIVILEGES ON achievement_portal.* TO 'portal_user'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+### 2. Start the Backend (Spring Boot REST API)
+```bash
+cd backend
+mvn spring-boot:run
+```
+*The REST API will start on `http://localhost:8080`.*
+
+### 3. Start the Frontend (React + Vite)
+```bash
+cd frontend
+npm install
+npm run dev
+```
+*The web application will open on `http://localhost:5173`.*
 
 ---
 
-## 🐳 How to Run with Docker Compose
+## 🐳 Running with Docker Compose
 
-1. Copy the example environment file:
+1. Copy `.env.example` to `.env`:
    ```bash
    cp .env.example .env
    ```
-2. Build and start both MySQL and Spring Boot containers:
+2. Build and run all services:
    ```bash
    docker compose up --build
    ```
-3. Watch application logs:
-   ```bash
-   docker compose logs -f app
-   ```
-4. Stop containers while preserving database and file upload volumes:
+3. Stop services:
    ```bash
    docker compose down
    ```
-5. Wipe all volumes and start fresh:
-   ```bash
-   docker compose down -v
-   ```
-6. Backup the database using `mysqldump` through Docker:
-   ```bash
-   docker exec -t achievement_portal_db mysqldump -u portal_user -pportal_pass123 achievement_portal > backup.sql
-   ```
-
----
-
-## 📁 Project Folder Structure
-
-```
-student_achievement_portal/
-├── backend/
-│   ├── Dockerfile
-│   ├── pom.xml
-│   └── src/
-│       ├── main/
-│       │   ├── java/com/portal/
-│       │   │   ├── config/          # SecurityConfig, DataSeeder
-│       │   │   ├── controller/      # Auth, Student, Faculty, Admin, Analytics, Leaderboard, SEO, Profile
-│       │   │   ├── dto/             # Form DTOs, LeaderboardRowDto, ChartItemDto, StoredFileInfo
-│       │   │   ├── entity/          # User, Student, Faculty, Role, Category, Achievement, Document, etc.
-│       │   │   ├── repository/      # Spring Data JPA repositories with custom queries
-│       │   │   ├── security/        # CustomUserDetailsService, LoginLockoutListener
-│       │   │   ├── service/         # Business logic, file storage, verification, analytics
-│       │   │   └── util/            # Custom exceptions and CSV sanitizers
-│       │   └── resources/
-│       │       ├── application.properties
-│       │       ├── static/          # CSS, JavaScript, and images
-│       │       └── templates/       # Thymeleaf views (auth, student, faculty, admin, analytics, error)
-│       └── test/                    # Integration and unit tests
-├── docker-compose.yml
-├── .env.example
-├── .gitignore
-└── README.md
-```

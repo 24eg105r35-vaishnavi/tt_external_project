@@ -171,6 +171,56 @@ public class DataSeeder implements CommandLineRunner {
             System.out.println("Seeded/Verified Student: student@anurag.edu.in (Password: student123)");
         }
 
+        // Seed @college.edu counterparts for seamless login with either domain
+        if (adminRole != null && userRepository.findByEmail("admin@college.edu").isEmpty()) {
+            User admin = new User();
+            admin.setEmail("admin@college.edu");
+            admin.setPassword(passwordEncoder.encode(adminPass));
+            admin.setFullName("System Administrator");
+            admin.setEnabled(true);
+            admin.setRole(adminRole);
+            userRepository.save(admin);
+            System.out.println("Seeded Admin: admin@college.edu");
+        }
+
+        if (facultyRole != null && userRepository.findByEmail("faculty@college.edu").isEmpty()) {
+            User fUser = new User();
+            fUser.setEmail("faculty@college.edu");
+            fUser.setPassword(passwordEncoder.encode(facultyPass));
+            fUser.setFullName("Dr. Ramesh Sharma");
+            fUser.setEnabled(true);
+            fUser.setRole(facultyRole);
+            User savedF = userRepository.save(fUser);
+
+            Faculty f = new Faculty();
+            f.setDepartment("Computer Science and Engineering");
+            f.setDesignation("Associate Professor");
+            f.setUser(savedF);
+            facultyRepository.save(f);
+            System.out.println("Seeded Faculty: faculty@college.edu");
+        }
+
+        if (studentRole != null && userRepository.findByEmail("student@college.edu").isEmpty()) {
+            User sUser = new User();
+            sUser.setEmail("student@college.edu");
+            sUser.setPassword(passwordEncoder.encode("student123"));
+            sUser.setFullName("Rahul Sharma");
+            sUser.setEnabled(true);
+            sUser.setRole(studentRole);
+            User savedS = userRepository.save(sUser);
+
+            Student s = new Student();
+            s.setRollNumber("21EG105A99");
+            s.setBranch("CSE");
+            s.setYear(3);
+            s.setPhone("9876543210");
+            s.setProfileSlug("21eg105a99-rahul-sharma");
+            s.setVisibility(Visibility.PUBLIC);
+            s.setUser(savedS);
+            studentRepository.save(s);
+            System.out.println("Seeded Student: student@college.edu");
+        }
+
         // 6. One-time fix: ensure any existing student without a slug gets an auto-generated unique slug
         for (Student s : studentRepository.findAll()) {
             if (s.getProfileSlug() == null || s.getProfileSlug().trim().isEmpty()) {
