@@ -40,7 +40,6 @@ export default function App() {
   return (
     <AuthProvider>
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <TopStrip />
         <Navbar />
         <main style={{ flex: 1 }}>
           <Routes>

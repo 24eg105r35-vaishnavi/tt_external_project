@@ -120,7 +120,7 @@ export default function PublicProfilePage() {
                 </span>
               </div>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0 }}>
-                {profile.branch} • Year {profile.year} • National Institute of Technology
+                {profile.branch} • Year {profile.year}
               </p>
             </div>
           </div>

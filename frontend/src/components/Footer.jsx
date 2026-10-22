@@ -5,7 +5,7 @@ export default function Footer() {
     <footer style={{ marginTop: 'auto', backgroundColor: 'var(--surface)', borderTop: '1px solid var(--border)', padding: '24px 0', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
       <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          © {new Date().getFullYear()} National Institute of Technology — Student Achievement Portal
+          © {new Date().getFullYear()} Student Achievement Portal
         </div>
         <div style={{ display: 'flex', gap: '16px' }}>
           <span>Privacy & Security</span>
