@@ -161,6 +161,28 @@ public class DataSeeder implements CommandLineRunner {
             studentRepository.save(student);
             System.out.println("Seeded/Verified Student: student@anurag.edu.in (Password: student123)");
         }
+
+        // 6. One-time fix: ensure any existing student without a slug gets an auto-generated unique slug
+        for (Student s : studentRepository.findAll()) {
+            if (s.getProfileSlug() == null || s.getProfileSlug().trim().isEmpty()) {
+                String sName = (s.getUser() != null && s.getUser().getFullName() != null)
+                        ? s.getUser().getFullName().trim().toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("^-+|-+$", "")
+                        : "student";
+                String sRoll = (s.getRollNumber() != null)
+                        ? s.getRollNumber().trim().toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("^-+|-+$", "")
+                        : String.valueOf(s.getId());
+                String baseSlug = sName + "-" + sRoll;
+                String finalSlug = baseSlug;
+                int suffix = 2;
+                while (studentRepository.findByProfileSlug(finalSlug).isPresent()) {
+                    finalSlug = baseSlug + "-" + suffix;
+                    suffix++;
+                }
+                s.setProfileSlug(finalSlug);
+                studentRepository.save(s);
+                System.out.println("Fixed missing profileSlug for student " + s.getRollNumber() + ": " + finalSlug);
+            }
+        }
     }
 
     // helper to insert category or update verifierDepartment & fieldSchema

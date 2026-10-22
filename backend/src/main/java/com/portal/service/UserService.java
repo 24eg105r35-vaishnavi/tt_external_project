@@ -80,12 +80,27 @@ public class UserService {
         student.setYear(dto.getYear());
         student.setPhone(dto.getPhone().trim());
 
-        // make profile slug: rollNumber-fullName
-        String safeName = dto.getFullName().trim().toLowerCase().replaceAll("[^a-z0-9]", "-");
-        student.setProfileSlug(rollNumber.toLowerCase() + "-" + safeName);
+        // make profile slug: name-rollnumber (lowercase, letters, numbers, hyphens only)
+        String uniqueSlug = generateUniqueSlug(dto.getFullName(), rollNumber);
+        student.setProfileSlug(uniqueSlug);
         student.setVisibility(Visibility.PRIVATE);
         student.setUser(savedUser);
 
         studentRepository.save(student);
+    }
+
+    // helper to make lowercase unique slug: name-rollnumber, then name-rollnumber-2 if taken
+    public String generateUniqueSlug(String fullName, String rollNumber) {
+        String cleanName = fullName.trim().toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("^-+|-+$", "");
+        String cleanRoll = rollNumber.toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("^-+|-+$", "");
+        String baseSlug = cleanName + "-" + cleanRoll;
+
+        String uniqueSlug = baseSlug;
+        int counter = 2;
+        while (studentRepository.findByProfileSlug(uniqueSlug).isPresent()) {
+            uniqueSlug = baseSlug + "-" + counter;
+            counter++;
+        }
+        return uniqueSlug;
     }
 }

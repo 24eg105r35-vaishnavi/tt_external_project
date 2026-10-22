@@ -29,6 +29,9 @@
                 <li sec:authorize="hasRole('STUDENT')">
                     <a th:href="@{/student/achievements/new}">+ Upload</a>
                 </li>
+                <li sec:authorize="hasRole('STUDENT')">
+                    <a th:href="@{/student/profile}">Profile</a>
+                </li>
                 <li sec:authorize="hasRole('FACULTY')">
                     <a th:href="@{/faculty/dashboard}">Dashboard</a>
                 </li>
@@ -37,6 +40,13 @@
                 </li>
                 <li sec:authorize="hasRole('ADMIN')">
                     <a th:href="@{/admin/dashboard}">Dashboard</a>
+                </li>
+
+                <!-- Notifications with unread badge for logged in users -->
+                <li sec:authorize="isAuthenticated()">
+                    <a th:href="@{/notifications}">
+                        Notifications<span th:if="${unreadCount != null and unreadCount > 0}" class="badge-notification" th:text="${unreadCount}">1</span>
+                    </a>
                 </li>
 
                 <!-- User Name and Logout Form for Logged In Users -->

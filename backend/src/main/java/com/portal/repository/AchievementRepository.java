@@ -17,6 +17,15 @@ public interface AchievementRepository extends JpaRepository<Achievement, Long> 
     List<Achievement> findByStudentOrderByCreatedAtDesc(Student student);
     List<Achievement> findByStatus(Status status);
     List<Achievement> findByStudentAndStatus(Student student, Status status);
+    List<Achievement> findByStudentAndStatusOrderByEventDateDesc(Student student, Status status);
+
+    // eagerly fetch category to prevent LazyInitializationException on public profile
+    @Query("SELECT a FROM Achievement a " +
+           "JOIN FETCH a.category c " +
+           "WHERE a.student = :student AND a.status = :status " +
+           "ORDER BY a.eventDate DESC")
+    List<Achievement> findApprovedAchievementsForProfile(@Param("student") Student student,
+                                                        @Param("status") Status status);
 
     // query pending achievements for faculty queue with department routing and optional filters
     @Query("SELECT a FROM Achievement a " +

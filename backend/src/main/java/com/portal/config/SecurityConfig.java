@@ -58,10 +58,11 @@ public class SecurityConfig {
             .authenticationProvider(authProvider)
             // role-based endpoint protection
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/register", "/error", "/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/", "/login", "/register", "/error", "/css/**", "/js/**", "/images/**", "/u/**").permitAll()
                 .requestMatchers("/student/**").hasRole("STUDENT")
                 .requestMatchers("/faculty/**").hasRole("FACULTY")
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/notifications/**").authenticated()
                 .anyRequest().authenticated()
             )
             // custom login page configuration
