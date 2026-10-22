@@ -6,24 +6,43 @@
 </head>
 <body>
     <section class="container">
+        <!-- Header -->
         <div class="dashboard-header">
             <span class="badge">Faculty Portal</span>
             <h1>Welcome, <span th:text="${fullName}">Faculty Name</span>!</h1>
-            <p>Signed in as <strong th:text="${email}">faculty@anurag.edu.in</strong> (Role: <span th:text="${role}">FACULTY</span>)</p>
+            <p>Signed in as <strong th:text="${email}">faculty@anurag.edu.in</strong> | Role: <span th:text="${role}">FACULTY</span></p>
         </div>
 
         <div class="cards-grid">
-            <div class="card">
-                <h3>Pending Verifications</h3>
-                <p>Review student achievement submissions assigned to your department. (Part 4)</p>
+            <!-- Verification Queue Card -->
+            <div class="card" style="border-top: 4px solid var(--primary);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h3>Verification Queue</h3>
+                    <span th:if="${pendingCount != null and pendingCount > 0}" class="status-badge status-pending" th:text="${pendingCount} + ' Pending'">
+                        1 Pending
+                    </span>
+                    <span th:if="${pendingCount != null and pendingCount == 0}" class="status-badge status-approved">
+                        All Caught Up
+                    </span>
+                </div>
+                <p>Review student achievement submissions assigned to your department and award achievement points.</p>
+                <a th:href="@{/faculty/queue}" class="btn-primary" style="text-decoration: none; display: inline-block; margin-top: 1rem; width: auto; font-size: 0.9rem; padding: 0.5rem 1.25rem;">
+                    Go to Verification Queue &rarr;
+                </a>
             </div>
+
             <div class="card">
                 <h3>Verification History</h3>
-                <p>Check previously approved or rejected achievement certificates and feedback. (Part 4)</p>
+                <p>Track all previous verification decisions, reasons, and student resubmissions across departments.</p>
+                <a th:href="@{/faculty/queue}" class="btn-logout" style="text-decoration: none; display: inline-block; margin-top: 1rem;">
+                    View Processed Claims
+                </a>
             </div>
+
             <div class="card">
-                <h3>Department Summary</h3>
-                <p>Track student performance metrics across technical events and competitions. (Part 5)</p>
+                <h3>Department Analytics</h3>
+                <p>Student achievement metrics and participation reports across categories. (Part 6)</p>
+                <span class="badge" style="margin-top: 1rem;">Coming in Part 6</span>
             </div>
         </div>
     </section>

@@ -389,9 +389,9 @@ body {
 }
 
 .status-needs-correction {
-    background: #e0e7ff;
-    color: #3730a3;
-    border: 1px solid #c7d2fe;
+    background: #ffedd5;
+    color: #9a3412;
+    border: 1px solid #fed7aa;
 }
 
 /* Upload Card & Form Layout */
@@ -467,4 +467,70 @@ body {
     font-weight: 500;
     color: var(--slate-800, #1e293b);
 }
+
+/* Part 5: Faculty Decision Buttons & Panels */
+.btn-approve {
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-approve:hover {
+    background: #15803d;
+}
+
+.btn-reject {
+    background: #dc2626;
+    color: #ffffff;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-reject:hover {
+    background: #b91c1c;
+}
+
+.btn-sendback {
+    background: #ea580c;
+    color: #ffffff;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-sendback:hover {
+    background: #c2410c;
+}
+
+/* Filter bar */
+.filter-bar {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.filter-bar .form-group {
+    margin-bottom: 0;
+    flex: 1;
+    min-width: 160px;
+}
+
 

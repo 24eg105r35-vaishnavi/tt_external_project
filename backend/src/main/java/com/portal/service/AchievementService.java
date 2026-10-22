@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -241,5 +242,106 @@ public class AchievementService {
         }
 
         return cleanData;
+    }
+
+    // resubmit achievement when in REJECTED or NEEDS_CORRECTION status
+    @Transactional
+    public Achievement resubmitAchievement(Long achievementId,
+                                          AchievementDto dto,
+                                          MultipartFile file,
+                                          Map<String, String> extraFields,
+                                          String userEmail) {
+        // 1. load achievement and check student ownership
+        Achievement achievement = getAchievementById(achievementId, userEmail);
+
+        // 2. check status: only REJECTED or NEEDS_CORRECTION can be edited
+        if (achievement.getStatus() != Status.REJECTED && achievement.getStatus() != Status.NEEDS_CORRECTION) {
+            throw new IllegalStateException("Cannot edit achievement in " + achievement.getStatus() + " status. Only REJECTED or NEEDS_CORRECTION items can be edited.");
+        }
+
+        // 3. update standard fields
+        achievement.setTitle(dto.getTitle().trim());
+        achievement.setDescription(dto.getDescription() != null ? dto.getDescription().trim() : "");
+        achievement.setLevel(dto.getLevel().trim());
+        achievement.setEventDate(dto.getEventDate());
+        achievement.setOrganizer(dto.getOrganizer().trim());
+
+        // 4. validate dynamic extra fields
+        Map<String, Object> validatedExtraData = validateAndCleanExtraFields(achievement.getCategory().getFieldSchema(), extraFields);
+        try {
+            achievement.setExtraData(objectMapper.writeValueAsString(validatedExtraData));
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Failed to format extra fields data.");
+        }
+
+        // 5. optional new proof document upload
+        if (file != null && !file.isEmpty()) {
+            StoredFileInfo fileInfo = fileStorageService.storeFile(file, achievement.getStudent());
+            Document document = new Document();
+            document.setOriginalName(fileInfo.getOriginalName());
+            document.setStoredName(fileInfo.getStoredName());
+            document.setFilePath(fileInfo.getFilePath());
+            document.setFileType(fileInfo.getFileType());
+            document.setFileSize(fileInfo.getFileSize());
+            document.setChecksum(fileInfo.getChecksum());
+            document.setUploadedAt(LocalDateTime.now());
+            document.setAchievement(achievement);
+            documentRepository.save(document);
+        }
+
+        // 6. reset status to PENDING and pointsAwarded to 0
+        Status oldStatus = achievement.getStatus();
+        achievement.setStatus(Status.PENDING);
+        achievement.setPointsAwarded(0);
+        Achievement savedAchievement = achievementRepository.save(achievement);
+
+        // 7. create AuditLog row (old Verification rows stay untouched)
+        AuditLog auditLog = new AuditLog();
+        auditLog.setAction("ACHIEVEMENT_RESUBMITTED");
+        auditLog.setEntityName("Achievement");
+        auditLog.setEntityId(savedAchievement.getId());
+        auditLog.setOldValue(oldStatus.name());
+        auditLog.setNewValue(Status.PENDING.name());
+        auditLog.setPerformedBy(userEmail);
+        auditLog.setCreatedAt(LocalDateTime.now());
+        auditLogRepository.save(auditLog);
+
+        return savedAchievement;
+    }
+
+    // student dashboard stats: counts, total points, and recent 5 achievements
+    @Transactional(readOnly = true)
+    public Map<String, Object> getStudentDashboardStats(String userEmail) {
+        List<Achievement> achievements = getAchievementsForStudent(userEmail);
+
+        int pendingCount = 0;
+        int approvedCount = 0;
+        int needsActionCount = 0;
+        int totalPoints = 0;
+
+        for (Achievement a : achievements) {
+            if (a.getStatus() == Status.PENDING) {
+                pendingCount++;
+            } else if (a.getStatus() == Status.APPROVED) {
+                approvedCount++;
+                totalPoints += a.getPointsAwarded();
+            } else if (a.getStatus() == Status.NEEDS_CORRECTION || a.getStatus() == Status.REJECTED) {
+                needsActionCount++;
+            }
+        }
+
+        // extract 5 most recent achievements
+        List<Achievement> recent = new ArrayList<>();
+        for (int i = 0; i < achievements.size() && i < 5; i++) {
+            recent.add(achievements.get(i));
+        }
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("pendingCount", pendingCount);
+        stats.put("approvedCount", approvedCount);
+        stats.put("needsActionCount", needsActionCount);
+        stats.put("totalPoints", totalPoints);
+        stats.put("recentAchievements", recent);
+        return stats;
     }
 }

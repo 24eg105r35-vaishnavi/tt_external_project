@@ -7,13 +7,14 @@
 <body>
     <section class="container">
         <div class="form-card" style="max-width: 800px;">
+            <!-- Top Bar -->
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
                 <div>
                     <div style="margin-bottom: 0.5rem;">
-                        <span th:if="${achievement.status.name() == 'PENDING'}" class="status-badge status-pending">Status: Pending Verification</span>
-                        <span th:if="${achievement.status.name() == 'APPROVED'}" class="status-badge status-approved">Status: Approved</span>
-                        <span th:if="${achievement.status.name() == 'REJECTED'}" class="status-badge status-rejected">Status: Rejected</span>
-                        <span th:if="${achievement.status.name() == 'NEEDS_CORRECTION'}" class="status-badge status-needs-correction">Status: Needs Correction</span>
+                        <span th:if="${achievement.status.name() == 'PENDING'}" class="status-badge status-pending">Pending Verification</span>
+                        <span th:if="${achievement.status.name() == 'APPROVED'}" class="status-badge status-approved">Approved</span>
+                        <span th:if="${achievement.status.name() == 'REJECTED'}" class="status-badge status-rejected">Rejected</span>
+                        <span th:if="${achievement.status.name() == 'NEEDS_CORRECTION'}" class="status-badge status-needs-correction">Needs Correction</span>
                     </div>
                     <h2 style="margin-bottom: 0.25rem;" th:text="${achievement.title}">Achievement Title</h2>
                     <p class="subtitle" style="margin-bottom: 0;">
@@ -21,7 +22,50 @@
                         Submitted on: <span th:text="${#temporals.format(achievement.createdAt, 'dd MMM yyyy, HH:mm')}">Date</span>
                     </p>
                 </div>
-                <a th:href="@{/student/achievements}" class="btn-logout" style="text-decoration: none;">&larr; Back to My List</a>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <a th:if="${achievement.status.name() == 'REJECTED' or achievement.status.name() == 'NEEDS_CORRECTION'}"
+                       th:href="@{/student/achievements/{id}/edit(id=${achievement.id})}"
+                       class="btn-primary"
+                       style="text-decoration: none; width: auto; padding: 0.45rem 1rem; font-size: 0.9rem;">
+                        &#9998; Edit &amp; Resubmit
+                    </a>
+                    <a th:href="@{/student/achievements}" class="btn-logout" style="text-decoration: none;">&larr; My Achievements</a>
+                </div>
+            </div>
+
+            <!-- Flash Alerts -->
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">
+                Success message.
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">
+                Error message.
+            </div>
+
+            <!-- Highlighted Reviewer Feedback Alert for Rejected or Needs Correction -->
+            <div th:if="${achievement.status.name() == 'NEEDS_CORRECTION'}" class="alert" style="background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412;">
+                <div style="font-size: 1rem; font-weight: 700; margin-bottom: 0.35rem;">&#9888; Corrections Requested by Reviewer</div>
+                <p style="margin: 0; font-size: 0.95rem;">
+                    <strong>Faculty Feedback:</strong>
+                    <span th:text="${latestReason != null ? latestReason : 'Please review and update your submission.'}">Feedback</span>
+                </p>
+                <div style="margin-top: 0.75rem;">
+                    <a th:href="@{/student/achievements/{id}/edit(id=${achievement.id})}" class="btn-sendback" style="display: inline-block; text-decoration: none; padding: 0.45rem 1rem; font-size: 0.85rem;">
+                        Make Corrections &amp; Resubmit &rarr;
+                    </a>
+                </div>
+            </div>
+
+            <div th:if="${achievement.status.name() == 'REJECTED'}" class="alert alert-danger">
+                <div style="font-size: 1rem; font-weight: 700; margin-bottom: 0.35rem;">&#10008; Claim Rejected by Reviewer</div>
+                <p style="margin: 0; font-size: 0.95rem;">
+                    <strong>Rejection Reason:</strong>
+                    <span th:text="${latestReason != null ? latestReason : 'No reason specified.'}">Reason</span>
+                </p>
+                <div style="margin-top: 0.75rem;">
+                    <a th:href="@{/student/achievements/{id}/edit(id=${achievement.id})}" class="btn-reject" style="display: inline-block; text-decoration: none; padding: 0.45rem 1rem; font-size: 0.85rem;">
+                        Update &amp; Resubmit Claim &rarr;
+                    </a>
+                </div>
             </div>
 
             <!-- Core Details Grid -->
@@ -49,12 +93,17 @@
 
                 <div class="detail-item">
                     <span class="detail-label">Points Awarded</span>
-                    <span class="detail-value" style="color: var(--primary);" th:text="${achievement.pointsAwarded} + ' Points (Awarded after faculty review)'">0 Points</span>
+                    <span class="detail-value" style="font-weight: 700;"
+                          th:styleappend="${achievement.status.name() == 'APPROVED'} ? 'color: var(--success-color);' : 'color: var(--primary);'">
+                        <span th:text="${achievement.pointsAwarded} + ' Points'">0 Points</span>
+                        <span th:if="${achievement.status.name() == 'APPROVED'}" style="font-size: 0.85rem; font-weight: normal; color: var(--success-color);">(Verified)</span>
+                        <span th:if="${achievement.status.name() == 'PENDING'}" style="font-size: 0.85rem; font-weight: normal; color: var(--muted-color);">(Pending review)</span>
+                    </span>
                 </div>
 
                 <div class="detail-item">
                     <span class="detail-label">Verification Department</span>
-                    <span class="detail-value" th:text="${achievement.category.verifierDepartment}">CSE</span>
+                    <span class="detail-value" th:text="${achievement.category.verifierDepartment}">Physical Education</span>
                 </div>
             </div>
 
@@ -97,6 +146,37 @@
                         &#128065; View Document
                     </a>
                 </div>
+            </div>
+
+            <!-- Verification History Table -->
+            <h3 class="form-section-title">Verification History</h3>
+            <div th:if="${#lists.isEmpty(history)}" style="color: var(--muted-color); font-size: 0.9rem; padding: 0.5rem 0;">
+                No verification actions taken yet. This achievement is currently waiting in the verification queue.
+            </div>
+
+            <div th:if="${not #lists.isEmpty(history)}" class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Decision</th>
+                            <th>Reason / Remarks</th>
+                            <th>Verified By</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="ver : ${history}">
+                            <td>
+                                <span th:if="${ver.decision.name() == 'APPROVED'}" class="status-badge status-approved">Approved</span>
+                                <span th:if="${ver.decision.name() == 'REJECTED'}" class="status-badge status-rejected">Rejected</span>
+                                <span th:if="${ver.decision.name() == 'SENT_BACK'}" class="status-badge status-needs-correction">Needs Correction</span>
+                            </td>
+                            <td th:text="${#strings.isEmpty(ver.reason) ? '—' : ver.reason}">Feedback</td>
+                            <td th:text="${ver.faculty.user.fullName} + ' (' + ${ver.faculty.department} + ')'">Faculty</td>
+                            <td th:text="${#temporals.format(ver.decidedAt, 'dd MMM yyyy, HH:mm')}">Date</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </section>

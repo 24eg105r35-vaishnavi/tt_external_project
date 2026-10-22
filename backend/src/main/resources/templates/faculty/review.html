@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::section})}">
+<head>
+    <title th:text="'Review: ' + ${achievement.title} + ' - Faculty Portal'">Review Achievement</title>
+</head>
+<body>
+    <section class="container">
+        <!-- Top Nav & Header -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <a th:href="@{/faculty/queue}" class="btn-logout" style="text-decoration: none; display: inline-block; margin-bottom: 0.75rem;">
+                    &larr; Back to Queue
+                </a>
+                <div style="margin-bottom: 0.5rem;">
+                    <span th:if="${achievement.status.name() == 'PENDING'}" class="status-badge status-pending">Pending Verification</span>
+                    <span th:if="${achievement.status.name() == 'APPROVED'}" class="status-badge status-approved">Approved</span>
+                    <span th:if="${achievement.status.name() == 'REJECTED'}" class="status-badge status-rejected">Rejected</span>
+                    <span th:if="${achievement.status.name() == 'NEEDS_CORRECTION'}" class="status-badge status-needs-correction">Needs Correction</span>
+                </div>
+                <h1 style="font-size: 1.6rem; color: var(--primary-dark); margin-bottom: 0.25rem;" th:text="${achievement.title}">
+                    Smart India Hackathon 2026
+                </h1>
+                <p style="color: var(--muted-color); font-size: 0.95rem; margin: 0;">
+                    Submitted by: <strong th:text="${achievement.student.user.fullName}">Rahul Sharma</strong>
+                    (<span th:text="${achievement.student.rollNumber}">21EG105A01</span>, <span th:text="${achievement.student.branch}">CSE</span> - Year <span th:text="${achievement.student.year}">3</span>)
+                    | Submitted on <span th:text="${#temporals.format(achievement.createdAt, 'dd MMM yyyy, HH:mm')}">Date</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Alert messages -->
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">
+            Error message.
+        </div>
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">
+            Success message.
+        </div>
+
+        <!-- Two Column Layout: Claim Details (Left) + Document Proof (Right) -->
+        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 2rem;" class="review-grid">
+            <style>
+                @media (min-width: 850px) {
+                    .review-grid {
+                        grid-template-columns: 1.1fr 0.9fr !important;
+                    }
+                }
+            </style>
+
+            <!-- Column 1: Claim Information -->
+            <div class="card">
+                <h3 class="form-section-title" style="margin-top: 0;">Achievement Claim Details</h3>
+                
+                <div class="detail-grid" style="margin-top: 1rem;">
+                    <div class="detail-item">
+                        <span class="detail-label">Category</span>
+                        <span class="detail-value" th:text="${achievement.category.name} + ' (' + ${achievement.category.points} + ' Max Points)'">Hackathon</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Achievement Level</span>
+                        <span class="detail-value" th:text="${achievement.level}">NATIONAL</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Event Date</span>
+                        <span class="detail-value" th:text="${#temporals.format(achievement.eventDate, 'dd MMMM yyyy')}">15 Oct 2026</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Organizer / Body</span>
+                        <span class="detail-value" th:text="${achievement.organizer}">AICTE</span>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div th:if="${achievement.description != null and !#strings.isEmpty(achievement.description)}" style="margin-top: 1rem;">
+                    <span class="detail-label">Description &amp; Contribution</span>
+                    <div style="background: var(--slate-50, #f8fafc); border: 1px solid var(--border-color); border-radius: 6px; padding: 0.85rem; font-size: 0.95rem; line-height: 1.6; margin-top: 0.25rem;"
+                         th:text="${achievement.description}">
+                        Student description goes here...
+                    </div>
+                </div>
+
+                <!-- Dynamic Extra Data Key-Value Pairs -->
+                <div th:if="${not #maps.isEmpty(extraFieldsMap)}" style="margin-top: 1.25rem;">
+                    <h4 style="font-size: 0.95rem; color: var(--primary-dark); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.04em;">
+                        Category-Specific Fields
+                    </h4>
+                    <div class="detail-grid" style="margin-top: 0.5rem;">
+                        <div th:each="entry : ${extraFieldsMap}" class="detail-item">
+                            <span class="detail-label" th:text="${entry.key}">Field</span>
+                            <span class="detail-value" th:text="${entry.value}">Value</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 2: Document Proof Beside Claim -->
+            <div class="card">
+                <h3 class="form-section-title" style="margin-top: 0;">Submitted Proof Document</h3>
+
+                <div th:if="${#lists.isEmpty(documents)}" style="color: var(--muted-color); font-size: 0.95rem; padding: 1.5rem 0;">
+                    No proof document attached to this claim.
+                </div>
+
+                <div th:if="${not #lists.isEmpty(documents)}" style="display: flex; flex-direction: column; gap: 1.5rem; margin-top: 1rem;">
+                    <div th:each="doc : ${documents}" style="border: 1px solid var(--border-color); border-radius: 6px; padding: 1rem; background: var(--slate-50, #f8fafc);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+                            <div>
+                                <strong style="color: var(--slate-800, #1e293b);" th:text="${doc.originalName}">certificate.pdf</strong>
+                                <span style="font-size: 0.8rem; color: var(--muted-color); display: block;"
+                                      th:text="${#numbers.formatDecimal(doc.fileSize / 1024.0, 1, 1)} + ' KB'">120 KB</span>
+                            </div>
+                            <a th:href="@{/faculty/documents/{id}(id=${doc.id})}" target="_blank" class="btn-primary"
+                               style="width: auto; padding: 0.4rem 0.85rem; font-size: 0.85rem; text-decoration: none;">
+                                Open File &#8599;
+                            </a>
+                        </div>
+
+                        <!-- Inline Image Preview -->
+                        <div th:if="${(doc.fileType != null and doc.fileType.startsWith('image/')) or doc.originalName.toLowerCase().endsWith('.png') or doc.originalName.toLowerCase().endsWith('.jpg') or doc.originalName.toLowerCase().endsWith('.jpeg')}">
+                            <img th:src="@{/faculty/documents/{id}(id=${doc.id})}"
+                                 alt="Proof Certificate Preview"
+                                 style="max-width: 100%; max-height: 400px; border-radius: 4px; border: 1px solid var(--border-color); display: block; margin: 0 auto;" />
+                        </div>
+
+                        <!-- PDF Preview Link & Embed -->
+                        <div th:if="${(doc.fileType != null and doc.fileType == 'application/pdf') or doc.originalName.toLowerCase().endsWith('.pdf')}">
+                            <iframe th:src="@{/faculty/documents/{id}(id=${doc.id})}"
+                                    style="width: 100%; height: 380px; border: 1px solid var(--border-color); border-radius: 4px; background: #ffffff;">
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verification History Section -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <h3 class="form-section-title" style="margin-top: 0;">Previous Verification History</h3>
+
+            <div th:if="${#lists.isEmpty(history)}" style="color: var(--muted-color); font-size: 0.95rem; padding: 0.5rem 0;">
+                No previous verification decisions recorded for this achievement.
+            </div>
+
+            <div th:if="${not #lists.isEmpty(history)}" class="table-responsive" style="margin-top: 0.5rem;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Decision</th>
+                            <th>Reason / Remarks</th>
+                            <th>Verified By</th>
+                            <th>Department</th>
+                            <th>Decided At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="ver : ${history}">
+                            <td>
+                                <span th:if="${ver.decision.name() == 'APPROVED'}" class="status-badge status-approved">Approved</span>
+                                <span th:if="${ver.decision.name() == 'REJECTED'}" class="status-badge status-rejected">Rejected</span>
+                                <span th:if="${ver.decision.name() == 'SENT_BACK'}" class="status-badge status-needs-correction">Sent Back</span>
+                            </td>
+                            <td th:text="${#strings.isEmpty(ver.reason) ? '—' : ver.reason}">Feedback reason</td>
+                            <td th:text="${ver.faculty.user.fullName}">Dr. Ramesh Sharma</td>
+                            <td th:text="${ver.faculty.department}">CSE</td>
+                            <td th:text="${#temporals.format(ver.decidedAt, 'dd MMM yyyy, HH:mm')}">Date</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Faculty Decision Panel -->
+        <div class="card" style="border: 2px solid var(--primary-light);">
+            <h3 class="form-section-title" style="margin-top: 0; color: var(--primary);">
+                Verification Decision
+            </h3>
+
+            <!-- When already decided and not pending -->
+            <div th:if="${achievement.status.name() != 'PENDING'}" style="padding: 1rem; background: var(--slate-50, #f8fafc); border-radius: 6px; border: 1px solid var(--border-color);">
+                <p style="margin: 0; font-weight: 500;">
+                    This claim is already in status:
+                    <strong th:text="${achievement.status}">APPROVED</strong>.
+                    Points Awarded: <strong th:text="${achievement.pointsAwarded}">12</strong>.
+                    No further review actions can be taken at this time.
+                </p>
+            </div>
+
+            <!-- When pending: Show 3 decision buttons + Reason textarea -->
+            <form th:if="${achievement.status.name() == 'PENDING'}"
+                  th:action="@{/faculty/achievements/{id}/decision(id=${achievement.id})}"
+                  th:object="${decisionDto}"
+                  method="post">
+
+                <div class="form-group">
+                    <label for="reason">
+                        Reason / Feedback
+                        <span style="font-weight: normal; color: var(--muted-color); font-size: 0.85rem;">
+                            (Required for <strong>Reject</strong> and <strong>Send Back</strong>)
+                        </span>
+                    </label>
+                    <textarea id="reason"
+                              name="reason"
+                              rows="3"
+                              class="form-control"
+                              placeholder="Enter constructive remarks, reason for rejection, or specific corrections needed..."></textarea>
+                </div>
+
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
+                    <!-- Approve Button -->
+                    <button type="submit"
+                            name="decision"
+                            value="APPROVE"
+                            class="btn-approve"
+                            onclick="return confirm('Are you sure you want to APPROVE this achievement claim?');">
+                        &#10004; Approve (<span th:text="${achievement.category.points}">12</span> Points)
+                    </button>
+
+                    <!-- Send Back Button -->
+                    <button type="submit"
+                            name="decision"
+                            value="SEND_BACK"
+                            class="btn-sendback">
+                        &#8635; Send Back for Correction
+                    </button>
+
+                    <!-- Reject Button -->
+                    <button type="submit"
+                            name="decision"
+                            value="REJECT"
+                            class="btn-reject"
+                            onclick="return confirm('Are you sure you want to REJECT this achievement claim?');">
+                        &#10008; Reject Claim
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+</body>
+</html>

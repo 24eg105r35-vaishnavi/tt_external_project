@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Edit &amp; Resubmit - Student Achievement Portal</title>
+</head>
+<body>
+    <section class="container">
+        <div class="form-card">
+            <!-- Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                    <h2>Edit &amp; Resubmit Achievement</h2>
+                    <p class="subtitle" style="margin-bottom: 0;">Make corrections to your claim and resubmit for faculty review</p>
+                </div>
+                <a th:href="@{/student/achievements/{id}(id=${achievement.id})}" class="btn-logout" style="text-decoration: none;">&larr; Cancel</a>
+            </div>
+
+            <!-- Reviewer Feedback Callout -->
+            <div th:if="${not #lists.isEmpty(history)}" class="alert" style="background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412;">
+                <strong>Faculty Feedback:</strong>
+                <span th:text="${history[0].reason}">Please provide proper certificate proof.</span>
+                <div style="font-size: 0.8rem; margin-top: 0.25rem; color: #c2410c;">
+                    Decision by <span th:text="${history[0].faculty.user.fullName}">Faculty</span> on
+                    <span th:text="${#temporals.format(history[0].decidedAt, 'dd MMM yyyy')}">Date</span>
+                </div>
+            </div>
+
+            <!-- Error Alerts -->
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">
+                Error message.
+            </div>
+
+            <form th:action="@{/student/achievements/{id}/edit(id=${achievement.id})}"
+                  th:object="${achievementDto}"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                <!-- Hidden category ID -->
+                <input type="hidden" th:field="*{categoryId}" />
+
+                <h3 class="form-section-title" style="margin-top: 0;">1. Achievement Information</h3>
+
+                <div class="form-group">
+                    <label>Category</label>
+                    <input type="text" class="form-control" th:value="${achievement.category.name} + ' (' + ${achievement.category.points} + ' Max Points)'" readonly style="background: var(--slate-100, #f1f5f9); cursor: not-allowed;" />
+                </div>
+
+                <div class="form-group">
+                    <label for="title">Achievement Title <span style="color:var(--danger-color)">*</span></label>
+                    <input type="text" id="title" th:field="*{title}" class="form-control" required />
+                    <span class="field-error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="level">Achievement Level <span style="color:var(--danger-color)">*</span></label>
+                        <select id="level" th:field="*{level}" class="form-control" required>
+                            <option th:each="lvl : ${levels}" th:value="${lvl}" th:text="${lvl}"></option>
+                        </select>
+                        <span class="field-error" th:if="${#fields.hasErrors('level')}" th:errors="*{level}"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eventDate">Event Date <span style="color:var(--danger-color)">*</span></label>
+                        <input type="date" id="eventDate" th:field="*{eventDate}" class="form-control" required />
+                        <span class="field-error" th:if="${#fields.hasErrors('eventDate')}" th:errors="*{eventDate}"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="organizer">Organizing Body / Institute <span style="color:var(--danger-color)">*</span></label>
+                    <input type="text" id="organizer" th:field="*{organizer}" class="form-control" required />
+                    <span class="field-error" th:if="${#fields.hasErrors('organizer')}" th:errors="*{organizer}"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description &amp; Contribution</label>
+                    <textarea id="description" th:field="*{description}" class="form-control" rows="3"></textarea>
+                    <span class="field-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></span>
+                </div>
+
+                <!-- Dynamic Extra Fields Container -->
+                <div id="extraFieldsContainer">
+                    <div th:if="${not #maps.isEmpty(extraFieldsMap)}">
+                        <h3 class="form-section-title">2. Category Specific Fields</h3>
+                        <div th:each="entry : ${extraFieldsMap}" class="form-group">
+                            <label th:for="${entry.key}" th:text="${entry.key}">Field</label>
+                            <input type="text" th:id="${entry.key}" th:name="${entry.key}" th:value="${entry.value}" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Proof Document Replacement -->
+                <h3 class="form-section-title">Proof Document</h3>
+
+                <div th:if="${not #lists.isEmpty(documents)}" style="margin-bottom: 1rem; padding: 0.75rem; background: var(--slate-50, #f8fafc); border: 1px solid var(--border-color); border-radius: 6px;">
+                    <span class="detail-label">Current Attached File</span>
+                    <strong th:text="${documents[0].originalName}">certificate.pdf</strong>
+                    <span style="font-size: 0.8rem; color: var(--muted-color);"
+                          th:text="'(' + ${#numbers.formatDecimal(documents[0].fileSize / 1024.0, 1, 1)} + ' KB)'"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="proofFile">Upload New Proof (Optional, leave blank to keep current file)</label>
+                    <input type="file" id="proofFile" name="file" class="form-control" accept="image/*,application/pdf" capture="environment" />
+                    <small style="color: var(--muted-color); display: block; margin-top: 0.35rem;">
+                        Upload a new PDF, PNG, or JPG file if corrections were requested on your document.
+                    </small>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn-primary" style="flex: 1;">
+                        Save &amp; Resubmit for Verification &rarr;
+                    </button>
+                    <a th:href="@{/student/achievements/{id}(id=${achievement.id})}" class="btn-logout" style="text-decoration: none; padding: 0.75rem 1.25rem;">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </section>
+</body>
+</html>

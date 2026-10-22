@@ -32,6 +32,9 @@
                 <li sec:authorize="hasRole('FACULTY')">
                     <a th:href="@{/faculty/dashboard}">Dashboard</a>
                 </li>
+                <li sec:authorize="hasRole('FACULTY')">
+                    <a th:href="@{/faculty/queue}">Queue</a>
+                </li>
                 <li sec:authorize="hasRole('ADMIN')">
                     <a th:href="@{/admin/dashboard}">Dashboard</a>
                 </li>

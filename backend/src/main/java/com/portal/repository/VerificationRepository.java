@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface VerificationRepository extends JpaRepository<Verification, Long> {
     List<Verification> findByAchievement(Achievement achievement);
+    List<Verification> findByAchievementOrderByDecidedAtDesc(Achievement achievement);
 }
