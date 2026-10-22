@@ -8,17 +8,22 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    // call test health check endpoint
+  const checkHealth = () => {
+    setLoading(true);
+    setError('');
     api.get('/health')
       .then((res) => {
         setHealth(res.data);
         setLoading(false);
       })
-      .catch((err) => {
+      .catch(() => {
         setError('Could not connect to backend REST API. Ensure Spring Boot is running on port 8080.');
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    checkHealth();
   }, []);
 
   return (
@@ -67,7 +72,25 @@ export default function HomePage() {
             <span style={{ fontSize: '1.2rem' }}>{health ? '🟢' : '⏳'}</span>
             <strong>Status:</strong>
             {loading && <Spinner message="Testing backend connection..." />}
-            {error && <span style={{ color: 'var(--danger)' }}>{error}</span>}
+            {error && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ color: 'var(--danger)' }}>{error}</span>
+                <button
+                  onClick={checkHealth}
+                  style={{
+                    backgroundColor: 'var(--navy-700)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '4px 10px',
+                    fontSize: '0.8rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Retry
+                </button>
+              </span>
+            )}
             {health && (
               <span style={{ color: 'var(--success)', fontWeight: 600 }}>
                 {health.message} (Status: {health.status})
