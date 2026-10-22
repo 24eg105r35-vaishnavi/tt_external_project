@@ -87,6 +87,7 @@ public class SecurityConfig {
                 .authenticationEntryPoint(authEntryPoint)
                 .accessDeniedHandler(accessDeniedHandler)
             )
+            .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
             .authenticationProvider(authProvider)
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth

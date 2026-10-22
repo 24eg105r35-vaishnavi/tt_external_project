@@ -66,31 +66,47 @@ export default function DocumentViewer({ documentId, originalName, fileType }) {
 
   return (
     <div style={{ border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#fff' }}>
-      <div style={{ padding: '10px 14px', backgroundColor: 'var(--bg)', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ padding: '10px 14px', backgroundColor: 'var(--bg)', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
         <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--navy-900)' }}>
           📄 {originalName || 'Document Proof'}
         </span>
-        <a
-          href={blobUrl}
-          download={originalName || 'achievement_document'}
-          style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--indigo-600)', textDecoration: 'underline' }}
-        >
-          Download File
-        </a>
+        <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+          <a
+            href={blobUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--indigo-600)', textDecoration: 'underline' }}
+          >
+            Open in New Tab ↗
+          </a>
+          <a
+            href={blobUrl}
+            download={originalName || 'achievement_document'}
+            style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-muted)', textDecoration: 'underline' }}
+          >
+            Download File ⬇
+          </a>
+        </div>
       </div>
 
       <div style={{ padding: '12px', textAlign: 'center' }}>
         {isPdf ? (
-          <iframe
-            src={blobUrl}
-            title={originalName || 'PDF Viewer'}
-            style={{ width: '100%', height: '480px', border: 'none', borderRadius: '4px' }}
-          />
+          <object
+            data={blobUrl}
+            type="application/pdf"
+            style={{ width: '100%', height: '520px', border: 'none', borderRadius: '4px' }}
+          >
+            <iframe
+              src={blobUrl}
+              title={originalName || 'PDF Viewer'}
+              style={{ width: '100%', height: '520px', border: 'none', borderRadius: '4px' }}
+            />
+          </object>
         ) : (
           <img
             src={blobUrl}
             alt={originalName || 'Certificate Preview'}
-            style={{ maxWidth: '100%', maxHeight: '480px', objectFit: 'contain', borderRadius: '4px' }}
+            style={{ maxWidth: '100%', maxHeight: '520px', objectFit: 'contain', borderRadius: '4px' }}
           />
         )}
       </div>

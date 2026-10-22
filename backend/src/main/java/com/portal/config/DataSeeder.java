@@ -70,7 +70,7 @@ public class DataSeeder implements CommandLineRunner {
                 "{\"name\":\"doiOrIssn\",\"label\":\"DOI or ISSN\",\"type\":\"text\",\"required\":true}," +
                 "{\"name\":\"authorPosition\",\"label\":\"Author Position\",\"type\":\"select\",\"options\":[\"First Author\",\"Co-Author\",\"Corresponding Author\"],\"required\":true}]");
 
-        seedOrUpdateCategory("Internship", "Industry internship", 15, "Placement Cell",
+        seedOrUpdateCategory("Internship", "Industry internship", 15, "ALL",
                 "[{\"name\":\"company\",\"label\":\"Company Name\",\"type\":\"text\",\"required\":true}," +
                 "{\"name\":\"role\",\"label\":\"Internship Role\",\"type\":\"text\",\"required\":true}," +
                 "{\"name\":\"mode\",\"label\":\"Mode\",\"type\":\"select\",\"options\":[\"Offline\",\"Online\",\"Hybrid\"],\"required\":true}," +

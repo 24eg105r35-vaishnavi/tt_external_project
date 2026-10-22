@@ -65,7 +65,15 @@ public class VerificationService {
         if (verifierDept == null || verifierDept.trim().isEmpty() || "ALL".equalsIgnoreCase(verifierDept.trim())) {
             return true;
         }
-        return verifierDept.trim().equalsIgnoreCase(faculty.getDepartment().trim());
+        String fDept = faculty.getDepartment() != null ? faculty.getDepartment().trim().toLowerCase() : "";
+        String vDept = verifierDept.trim().toLowerCase();
+        if (fDept.equalsIgnoreCase(vDept)) {
+            return true;
+        }
+        if ((fDept.contains("computer") && vDept.equals("cse")) || (fDept.equals("cse") && vDept.contains("computer"))) {
+            return true;
+        }
+        return false;
     }
 
     // get pending queue for the faculty with filters
