@@ -1,26 +1,36 @@
 package com.portal.config;
 
 import com.portal.security.CustomUserDetailsService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 @Configuration
 public class SecurityConfig {
 
-    // single password encoder bean for the entire application
+    @Value("${app.frontend-url:http://localhost:5173}")
+    private String frontendUrl;
+
+    // password encoder bean using BCrypt
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // explicitly wire DaoAuthenticationProvider with CustomUserDetailsService and PasswordEncoder
+    // authentication provider wired with user details service and password encoder
     @Bean
     public DaoAuthenticationProvider authenticationProvider(CustomUserDetailsService userDetailsService,
                                                             PasswordEncoder passwordEncoder) {
@@ -30,87 +40,40 @@ public class SecurityConfig {
         return authProvider;
     }
 
-    // redirects user to their specific dashboard based on their role
+    // expose authentication manager for REST login controller
     @Bean
-    public AuthenticationSuccessHandler customSuccessHandler() {
-        return (request, response, authentication) -> {
-            for (GrantedAuthority authority : authentication.getAuthorities()) {
-                String role = authority.getAuthority();
-                if (role.equals("ROLE_ADMIN")) {
-                    response.sendRedirect("/admin/dashboard");
-                    return;
-                } else if (role.equals("ROLE_FACULTY")) {
-                    response.sendRedirect("/faculty/dashboard");
-                    return;
-                } else if (role.equals("ROLE_STUDENT")) {
-                    response.sendRedirect("/student/dashboard");
-                    return;
-                }
-            }
-            response.sendRedirect("/");
-        };
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
     }
 
-    // custom failure handler to detect locked account vs invalid credentials
+    // CORS configuration allowing React frontend requests
     @Bean
-    public org.springframework.security.web.authentication.AuthenticationFailureHandler customFailureHandler(com.portal.repository.UserRepository userRepository) {
-        return (request, response, exception) -> {
-            String email = request.getParameter("email");
-            if (email != null && !email.trim().isEmpty()) {
-                com.portal.entity.User user = userRepository.findByEmail(email.trim().toLowerCase()).orElse(null);
-                if (user != null && user.getLockUntil() != null && user.getLockUntil().isAfter(java.time.LocalDateTime.now())) {
-                    response.sendRedirect("/login?locked=true");
-                    return;
-                }
-            }
-            if (exception instanceof org.springframework.security.authentication.LockedException) {
-                response.sendRedirect("/login?locked=true");
-                return;
-            }
-            response.sendRedirect("/login?error=true");
-        };
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList(frontendUrl, "http://localhost:5173", "http://127.0.0.1:5173"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   DaoAuthenticationProvider authProvider,
-                                                   com.portal.repository.UserRepository userRepository) throws Exception {
+                                                   DaoAuthenticationProvider authProvider) throws Exception {
         http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authProvider)
-            // security headers
-            .headers(headers -> headers
-                .contentTypeOptions(contentType -> {}) // X-Content-Type-Options: nosniff
-                .frameOptions(frame -> frame.deny())   // X-Frame-Options: DENY
-                .referrerPolicy(referrer -> referrer.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
-            )
-            // role-based endpoint protection
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/register", "/error", "/css/**", "/js/**", "/images/**", "/u/**", "/robots.txt", "/sitemap.xml").permitAll()
-                .requestMatchers("/student/**").hasRole("STUDENT")
-                .requestMatchers("/faculty/**").hasRole("FACULTY")
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/analytics/**").hasAnyRole("FACULTY", "ADMIN")
-                .requestMatchers("/search/**", "/export/**").hasAnyRole("FACULTY", "ADMIN")
-                .requestMatchers("/leaderboard/**", "/notifications/**").authenticated()
-                .anyRequest().authenticated()
-            )
-            // custom login page configuration
-            .formLogin(form -> form
-                .loginPage("/login")
-                .loginProcessingUrl("/login")
-                .usernameParameter("email")
-                .passwordParameter("password")
-                .successHandler(customSuccessHandler())
-                .failureHandler(customFailureHandler(userRepository))
-                .permitAll()
-            )
-            // logout configuration
-            .logout(logout -> logout
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/login?logout=true")
-                .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID")
-                .permitAll()
+                .requestMatchers("/api/health", "/api/auth/**", "/api/public/**").permitAll()
+                .requestMatchers("/api/student/**").hasRole("STUDENT")
+                .requestMatchers("/api/faculty/**").hasRole("FACULTY")
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .anyRequest().permitAll()
             );
 
         return http.build();

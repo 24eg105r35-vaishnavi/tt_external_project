@@ -28,3 +28,10 @@ target/
 uploads/
 **/uploads/
 
+# Node / Frontend build files
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+*.local
+

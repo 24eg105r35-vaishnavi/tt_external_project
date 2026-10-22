@@ -19,11 +19,11 @@ services:
       retries: 5
       start_period: 20s
 
-  app:
+  backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: achievement_portal_app
+    container_name: achievement_portal_backend
     restart: on-failure
     depends_on:
       db:
@@ -37,11 +37,25 @@ services:
       DB_USER: ${DB_USER:-portal_user}
       DB_PASSWORD: ${DB_PASSWORD:-portal_pass123}
       UPLOAD_DIR: /app/uploads
-      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8080}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      APP_JWT_SECRET: ${APP_JWT_SECRET:-StudentAchievementPortalSecretKeyForJwtSigningMustBeAtLeast256BitsLong2026}
+      APP_JWT_EXPIRY: ${APP_JWT_EXPIRY:-2}
+      APP_ALLOWED_DOMAIN: ${APP_ALLOWED_DOMAIN:-@anurag.edu.in}
       ADMIN_DEFAULT_PASSWORD: ${ADMIN_DEFAULT_PASSWORD:-admin123}
       FACULTY_DEFAULT_PASSWORD: ${FACULTY_DEFAULT_PASSWORD:-faculty123}
     volumes:
       - app_uploads:/app/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: achievement_portal_frontend
+    restart: on-failure
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
 
 volumes:
   mysql_data:
