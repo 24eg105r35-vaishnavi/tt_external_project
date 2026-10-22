@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Create Faculty User - Admin Portal</title>
+</head>
+<body>
+    <section class="container" style="max-width: 650px;">
+        <!-- Header -->
+        <div class="dashboard-header" style="margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                    <span class="badge">Admin Settings</span>
+                    <h1 style="margin: 0.25rem 0 0;">Create Faculty Account</h1>
+                </div>
+                <a th:href="@{/admin/users}" class="btn-logout" style="text-decoration: none;">&larr; Back to Users</a>
+            </div>
+        </div>
+
+        <!-- Feedback Alert Messages -->
+        <div th:if="${errorMessage}" class="alert alert-danger" style="margin-bottom: 1.5rem;" th:text="${errorMessage}">
+            Error creating faculty account.
+        </div>
+
+        <!-- Form Card -->
+        <div class="card">
+            <form th:action="@{/admin/users/faculty}" method="post" th:object="${facultyDto}">
+                <div class="form-group">
+                    <label for="fullName" class="form-label">Full Name *</label>
+                    <input type="text"
+                           id="fullName"
+                           th:field="*{fullName}"
+                           class="form-control"
+                           placeholder="e.g. Dr. Ramesh Kumar"
+                           required />
+                </div>
+
+                <div class="form-group">
+                    <label for="email" class="form-label">College Email Address *</label>
+                    <input type="email"
+                           id="email"
+                           th:field="*{email}"
+                           class="form-control"
+                           placeholder="e.g. ramesh.cse@anurag.edu.in"
+                           required />
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="department" class="form-label">Department *</label>
+                        <select id="department" th:field="*{department}" class="form-control" required>
+                            <option th:each="d : ${departments}" th:value="${d}" th:text="${d}">CSE</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="designation" class="form-label">Designation *</label>
+                        <input type="text"
+                               id="designation"
+                               th:field="*{designation}"
+                               class="form-control"
+                               placeholder="e.g. Assistant Professor"
+                               required />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">Temporary Password *</label>
+                    <input type="password"
+                           id="password"
+                           th:field="*{password}"
+                           class="form-control"
+                           placeholder="Enter initial temporary password"
+                           required />
+                    <small style="color: var(--muted-color); display: block; margin-top: 0.25rem;">
+                        This password will be securely hashed with BCrypt before storage.
+                    </small>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+                    <a th:href="@{/admin/users}" class="btn-logout" style="text-decoration: none; padding: 0.65rem 1.25rem;">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn-primary" style="width: auto; padding: 0.65rem 1.5rem;">
+                        Create Faculty User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+</body>
+</html>

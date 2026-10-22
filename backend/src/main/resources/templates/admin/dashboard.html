@@ -14,16 +14,32 @@
 
         <div class="cards-grid">
             <div class="card">
+                <h3>Achievement Categories</h3>
+                <p>Configure achievement categories, dynamic JSON field schemas, points, and active status.</p>
+                <a th:href="@{/admin/categories}" class="btn-primary" style="text-decoration: none; display: inline-block; margin-top: 1rem; width: auto; font-size: 0.9rem; padding: 0.5rem 1rem;">
+                    Manage Categories &rarr;
+                </a>
+            </div>
+            <div class="card">
                 <h3>User Management</h3>
-                <p>Manage student and faculty accounts, permissions, and status. (Part 5)</p>
+                <p>Browse users, create new faculty accounts, and toggle user active/disabled access.</p>
+                <a th:href="@{/admin/users}" class="btn-primary" style="text-decoration: none; display: inline-block; margin-top: 1rem; width: auto; font-size: 0.9rem; padding: 0.5rem 1rem;">
+                    Manage Users &rarr;
+                </a>
             </div>
             <div class="card">
-                <h3>Category Settings</h3>
-                <p>Configure achievement categories, points weighting, and verifier departments. (Part 5)</p>
+                <h3>Audit Log Viewer</h3>
+                <p>Inspect system-wide security, verification, and administrative audit trails.</p>
+                <a th:href="@{/admin/audit}" class="btn-primary" style="text-decoration: none; display: inline-block; margin-top: 1rem; width: auto; font-size: 0.9rem; padding: 0.5rem 1rem;">
+                    View Audit Logs &rarr;
+                </a>
             </div>
             <div class="card">
-                <h3>Audit Logs &amp; Reports</h3>
-                <p>Inspect system activity logs, verification histories, and export college reports. (Part 5)</p>
+                <h3>College-Wide Search</h3>
+                <p>Search, filter, and export verified student achievements to CSV format.</p>
+                <a th:href="@{/search}" class="btn-primary" style="text-decoration: none; display: inline-block; margin-top: 1rem; width: auto; font-size: 0.9rem; padding: 0.5rem 1rem;">
+                    Search Achievements &rarr;
+                </a>
             </div>
         </div>
     </section>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Search Achievements - Student Achievement Portal</title>
+</head>
+<body>
+    <section class="container">
+        <!-- Header -->
+        <div class="dashboard-header" style="margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <span class="badge">College-Wide Search</span>
+                    <h1 style="margin: 0.25rem 0 0;">Student Achievements</h1>
+                    <p style="margin: 0; color: var(--muted-color);">Search and filter all verified student achievements across departments</p>
+                </div>
+
+                <!-- Export CSV button keeping current filters -->
+                <a th:href="@{/export/csv(keyword=${searchDto.keyword}, branch=${searchDto.branch}, year=${searchDto.year}, categoryId=${searchDto.categoryId}, level=${searchDto.level}, fromDate=${searchDto.fromDate}, toDate=${searchDto.toDate})}"
+                   class="btn-approve"
+                   style="text-decoration: none; padding: 0.65rem 1.25rem; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.5rem;">
+                    &#128229; Export CSV
+                </a>
+            </div>
+        </div>
+
+        <!-- Filter Form -->
+        <div class="card" style="margin-bottom: 1.5rem;">
+            <form th:action="@{/search}" method="get" th:object="${searchDto}">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                    <!-- Keyword search -->
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="keyword" class="form-label">Student Name / Roll Number</label>
+                        <input type="text"
+                               id="keyword"
+                               th:field="*{keyword}"
+                               class="form-control"
+                               placeholder="e.g. Rahul or 21EG105A01" />
+                    </div>
+
+                    <!-- Branch -->
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="branch" class="form-label">Branch</label>
+                        <select id="branch" th:field="*{branch}" class="form-control">
+                            <option value="">All Branches</option>
+                            <option th:each="b : ${branches}" th:value="${b}" th:text="${b}">CSE</option>
+                        </select>
+                    </div>
+
+                    <!-- Year -->
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="year" class="form-label">Year of Study</label>
+                        <select id="year" th:field="*{year}" class="form-control">
+                            <option value="">All Years</option>
+                            <option th:each="y : ${years}" th:value="${y}" th:text="'Year ' + ${y}">Year 1</option>
+                        </select>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="categoryId" class="form-label">Category</label>
+                        <select id="categoryId" th:field="*{categoryId}" class="form-control">
+                            <option value="">All Categories</option>
+                            <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}">Hackathon</option>
+                        </select>
+                    </div>
+
+                    <!-- Level -->
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="level" class="form-label">Level</label>
+                        <select id="level" th:field="*{level}" class="form-control">
+                            <option value="">All Levels</option>
+                            <option th:each="lvl : ${levels}" th:value="${lvl}" th:text="${lvl}">COLLEGE</option>
+                        </select>
+                    </div>
+
+                    <!-- From Date -->
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="fromDate" class="form-label">From Date</label>
+                        <input type="date" id="fromDate" th:field="*{fromDate}" class="form-control" />
+                    </div>
+
+                    <!-- To Date -->
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="toDate" class="form-label">To Date</label>
+                        <input type="date" id="toDate" th:field="*{toDate}" class="form-control" />
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem; align-items: center; justify-content: flex-end;">
+                    <a th:href="@{/search}" class="btn-logout" style="text-decoration: none; padding: 0.55rem 1.25rem;">
+                        Reset
+                    </a>
+                    <button type="submit" class="btn-primary" style="width: auto; padding: 0.55rem 1.5rem;">
+                        &#128269; Apply Filters
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Table Card -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 class="form-section-title" style="margin: 0;">
+                    Results (<span th:text="${results.totalElements}">0</span> Verified Achievements)
+                </h3>
+            </div>
+
+            <!-- Empty State -->
+            <div th:if="${results.empty}" style="text-align: center; padding: 2.5rem 1rem; color: var(--muted-color);">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">&#128269;</div>
+                <h3>No approved achievements found</h3>
+                <p>Try clearing or adjusting your search filters above.</p>
+            </div>
+
+            <!-- Results Table (Horizontally scrollable on mobile) -->
+            <div th:if="${not results.empty}" class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Roll Number</th>
+                            <th>Branch</th>
+                            <th>Year</th>
+                            <th>Category</th>
+                            <th>Title</th>
+                            <th>Level</th>
+                            <th>Event Date</th>
+                            <th style="text-align: right;">Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="ach : ${results.content}">
+                            <td style="font-weight: 600;" th:text="${ach.student.user.fullName}">Student Name</td>
+                            <td style="font-family: monospace;" th:text="${ach.student.rollNumber}">21EG105A01</td>
+                            <td th:text="${ach.student.branch}">CSE</td>
+                            <td th:text="'Year ' + ${ach.student.year}">Year 3</td>
+                            <td>
+                                <span class="badge" th:text="${ach.category.name}">Category</span>
+                            </td>
+                            <td th:text="${ach.title}">Title</td>
+                            <td th:text="${ach.level}">NATIONAL</td>
+                            <td th:text="${#temporals.format(ach.eventDate, 'dd MMM yyyy')}">Date</td>
+                            <td style="text-align: right; font-weight: 700; color: var(--primary);" th:text="${ach.pointsAwarded} + ' pts'">10 pts</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Bar keeping filters -->
+            <div th:if="${results.totalPages > 1}" style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 1.5rem; flex-wrap: wrap;">
+                <!-- Previous Button -->
+                <a th:if="${results.hasPrevious()}"
+                   th:href="@{/search(page=${currentPage - 1}, keyword=${searchDto.keyword}, branch=${searchDto.branch}, year=${searchDto.year}, categoryId=${searchDto.categoryId}, level=${searchDto.level}, fromDate=${searchDto.fromDate}, toDate=${searchDto.toDate})}"
+                   class="btn-logout"
+                   style="text-decoration: none; padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    &larr; Previous
+                </a>
+                <span th:if="${!results.hasPrevious()}"
+                      class="btn-logout"
+                      style="opacity: 0.5; padding: 0.4rem 0.8rem; font-size: 0.85rem; cursor: not-allowed;">
+                    &larr; Previous
+                </span>
+
+                <!-- Page numbers -->
+                <span th:each="i : ${#numbers.sequence(0, results.totalPages - 1)}">
+                    <a th:if="${i != currentPage}"
+                       th:href="@{/search(page=${i}, keyword=${searchDto.keyword}, branch=${searchDto.branch}, year=${searchDto.year}, categoryId=${searchDto.categoryId}, level=${searchDto.level}, fromDate=${searchDto.fromDate}, toDate=${searchDto.toDate})}"
+                       th:text="${i + 1}"
+                       class="btn-logout"
+                       style="text-decoration: none; padding: 0.4rem 0.75rem; font-size: 0.85rem;">
+                        1
+                    </a>
+                    <span th:if="${i == currentPage}"
+                          th:text="${i + 1}"
+                          class="btn-primary"
+                          style="display: inline-block; width: auto; padding: 0.4rem 0.75rem; font-size: 0.85rem; font-weight: 700;">
+                        1
+                    </span>
+                </span>
+
+                <!-- Next Button -->
+                <a th:if="${results.hasNext()}"
+                   th:href="@{/search(page=${currentPage + 1}, keyword=${searchDto.keyword}, branch=${searchDto.branch}, year=${searchDto.year}, categoryId=${searchDto.categoryId}, level=${searchDto.level}, fromDate=${searchDto.fromDate}, toDate=${searchDto.toDate})}"
+                   class="btn-logout"
+                   style="text-decoration: none; padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    Next &rarr;
+                </a>
+                <span th:if="${!results.hasNext()}"
+                      class="btn-logout"
+                      style="opacity: 0.5; padding: 0.4rem 0.8rem; font-size: 0.85rem; cursor: not-allowed;">
+                    Next &rarr;
+                </span>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

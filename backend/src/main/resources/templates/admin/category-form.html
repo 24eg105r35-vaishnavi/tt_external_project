@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::section})}">
+<head>
+    <title th:text="${isNew ? 'Add Category' : 'Edit Category'} + ' - Admin Portal'">Category Form - Admin Portal</title>
+</head>
+<body>
+    <section class="container" style="max-width: 720px;">
+        <!-- Header -->
+        <div class="dashboard-header" style="margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                    <span class="badge">Admin Settings</span>
+                    <h1 style="margin: 0.25rem 0 0;" th:text="${isNew ? 'Add Achievement Category' : 'Edit Category: ' + category.name}">
+                        Category Form
+                    </h1>
+                </div>
+                <a th:href="@{/admin/categories}" class="btn-logout" style="text-decoration: none;">&larr; Back to Categories</a>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div th:if="${errorMessage}" class="alert alert-danger" style="margin-bottom: 1.5rem;" th:text="${errorMessage}">
+            Error saving category.
+        </div>
+
+        <!-- Note on points -->
+        <div class="card" style="margin-bottom: 1.5rem; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 0.85rem 1.25rem;">
+            <p style="margin: 0; color: #166534; font-size: 0.9rem;">
+                <strong>&#9432; Notice:</strong> Changing points affects only future approvals, not already-approved achievements.
+            </p>
+        </div>
+
+        <!-- Category Form Card -->
+        <div class="card">
+            <form th:action="@{/admin/categories}" method="post" th:object="${category}">
+                <!-- Hidden ID for edit -->
+                <input type="hidden" th:field="*{id}" />
+
+                <!-- Category Name -->
+                <div class="form-group">
+                    <label for="name" class="form-label">Category Name *</label>
+                    <input type="text"
+                           id="name"
+                           th:field="*{name}"
+                           class="form-control"
+                           placeholder="e.g. Hackathon, Research Publication, Sports"
+                           required />
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                    <label for="description" class="form-label">Description</label>
+                    <input type="text"
+                           id="description"
+                           th:field="*{description}"
+                           class="form-control"
+                           placeholder="Brief description of this achievement category" />
+                </div>
+
+                <!-- Default Points & Department Grid -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="points" class="form-label">Default Points *</label>
+                        <input type="number"
+                               id="points"
+                               th:field="*{points}"
+                               class="form-control"
+                               min="1"
+                               max="100"
+                               required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="verifierDepartment" class="form-label">Routing / Verifier Department</label>
+                        <select id="verifierDepartment" th:field="*{verifierDepartment}" class="form-control">
+                            <option th:each="dept : ${departments}" th:value="${dept}" th:text="${dept}">ALL</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Dynamic JSON Schema -->
+                <div class="form-group">
+                    <label for="fieldSchema" class="form-label">Dynamic Field Schema (JSON Format)</label>
+                    <small style="color: var(--muted-color); display: block; margin-bottom: 0.5rem;">
+                        Define extra fields required for claims in this category. Must be valid JSON array of objects.
+                    </small>
+                    <textarea id="fieldSchema"
+                              th:field="*{fieldSchema}"
+                              class="form-control"
+                              rows="5"
+                              style="font-family: monospace; font-size: 0.9rem;"
+                              placeholder='[{"name":"rank","type":"text","label":"Rank / Position"}]'></textarea>
+                </div>
+
+                <!-- Active Status -->
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" th:field="*{active}" />
+                        <span style="font-weight: 500;">Active (Enabled for student upload form)</span>
+                    </label>
+                </div>
+
+                <!-- Submit buttons -->
+                <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                    <a th:href="@{/admin/categories}" class="btn-logout" style="text-decoration: none; padding: 0.65rem 1.25rem;">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn-primary" style="width: auto; padding: 0.65rem 1.5rem;">
+                        Save Category
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+</body>
+</html>

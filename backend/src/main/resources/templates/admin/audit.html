@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Audit Logs - Admin Portal</title>
+</head>
+<body>
+    <section class="container">
+        <!-- Header -->
+        <div class="dashboard-header" style="margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <span class="badge">Security &amp; Compliance</span>
+                    <h1 style="margin: 0.25rem 0 0;">System Audit Logs</h1>
+                    <p style="margin: 0; color: var(--muted-color);">Immutable audit trail tracking system events, verifications, exports, and administrator updates</p>
+                </div>
+                <a th:href="@{/admin/dashboard}" class="btn-logout" style="text-decoration: none;">&larr; Dashboard</a>
+            </div>
+        </div>
+
+        <!-- Filter Form Card -->
+        <div class="card" style="margin-bottom: 1.5rem; padding: 1.25rem;">
+            <form th:action="@{/admin/audit}" method="get" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+                <!-- Filter by Action -->
+                <div class="form-group" style="margin-bottom: 0; min-width: 220px; flex: 1;">
+                    <label for="action" class="form-label">Filter by Action</label>
+                    <select id="action" name="action" class="form-control">
+                        <option value="">All Actions</option>
+                        <option th:each="act : ${commonActions}"
+                                th:value="${act}"
+                                th:text="${act}"
+                                th:selected="${act == action}">
+                            ACHIEVEMENT_APPROVED
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Filter by User Email -->
+                <div class="form-group" style="margin-bottom: 0; min-width: 240px; flex: 1;">
+                    <label for="performedBy" class="form-label">Filter by User Email</label>
+                    <input type="text"
+                           id="performedBy"
+                           name="performedBy"
+                           th:value="${performedBy}"
+                           class="form-control"
+                           placeholder="e.g. admin@anurag.edu.in" />
+                </div>
+
+                <!-- Submit / Clear buttons -->
+                <div style="display: flex; gap: 0.5rem;">
+                    <button type="submit" class="btn-primary" style="width: auto; padding: 0.65rem 1.25rem;">
+                        &#128269; Filter Logs
+                    </button>
+                    <a th:if="${(action != null and !action.isEmpty()) or (performedBy != null and !performedBy.isEmpty())}"
+                       th:href="@{/admin/audit}"
+                       class="btn-logout"
+                       style="text-decoration: none; padding: 0.65rem 1rem;">
+                        Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Audit Table Card -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 class="form-section-title" style="margin: 0;">
+                    Log Entries (<span th:text="${auditPage.totalElements}">0</span> Records)
+                </h3>
+                <small style="color: var(--muted-color); font-weight: 600;">&#128274; Read-Only Audit History</small>
+            </div>
+
+            <!-- Empty State -->
+            <div th:if="${auditPage.empty}" style="text-align: center; padding: 2.5rem 1rem; color: var(--muted-color);">
+                <h3>No audit logs found</h3>
+                <p>No activity records match the selected action and user criteria.</p>
+            </div>
+
+            <!-- Table (Horizontally scrollable on mobile) -->
+            <div th:if="${not auditPage.empty}" class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Action</th>
+                            <th>Entity</th>
+                            <th>Entity ID</th>
+                            <th>Performed By</th>
+                            <th>Old Value</th>
+                            <th>New Value / Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="log : ${auditPage.content}">
+                            <td style="font-size: 0.85rem; color: var(--muted-color); white-space: nowrap;"
+                                th:text="${#temporals.format(log.createdAt, 'dd MMM yyyy, hh:mm a')}">
+                                22 Oct 2026, 04:00 PM
+                            </td>
+                            <td>
+                                <span class="badge" th:text="${log.action}">LOGIN</span>
+                            </td>
+                            <td th:text="${log.entityName != null ? log.entityName : '-'}">Achievement</td>
+                            <td style="font-family: monospace; font-size: 0.85rem;" th:text="${log.entityId != null ? log.entityId : '-'}">1</td>
+                            <td style="font-weight: 500;" th:text="${log.performedBy != null ? log.performedBy : 'anonymous'}">admin@anurag.edu.in</td>
+                            <td style="font-size: 0.85rem; color: var(--muted-color); max-width: 200px; word-break: break-all;"
+                                th:text="${log.oldValue != null ? log.oldValue : '-'}">-</td>
+                            <td style="font-size: 0.85rem; max-width: 250px; word-break: break-all;"
+                                th:text="${log.newValue != null ? log.newValue : '-'}">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Bar keeping filters -->
+            <div th:if="${auditPage.totalPages > 1}" style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 1.5rem; flex-wrap: wrap;">
+                <a th:if="${auditPage.hasPrevious()}"
+                   th:href="@{/admin/audit(page=${currentPage - 1}, action=${action}, performedBy=${performedBy})}"
+                   class="btn-logout"
+                   style="text-decoration: none; padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    &larr; Previous
+                </a>
+                <span th:if="${!auditPage.hasPrevious()}"
+                      class="btn-logout"
+                      style="opacity: 0.5; padding: 0.4rem 0.8rem; font-size: 0.85rem; cursor: not-allowed;">
+                    &larr; Previous
+                </span>
+
+                <span th:each="i : ${#numbers.sequence(0, auditPage.totalPages - 1)}">
+                    <a th:if="${i != currentPage}"
+                       th:href="@{/admin/audit(page=${i}, action=${action}, performedBy=${performedBy})}"
+                       th:text="${i + 1}"
+                       class="btn-logout"
+                       style="text-decoration: none; padding: 0.4rem 0.75rem; font-size: 0.85rem;">
+                        1
+                    </a>
+                    <span th:if="${i == currentPage}"
+                          th:text="${i + 1}"
+                          class="btn-primary"
+                          style="display: inline-block; width: auto; padding: 0.4rem 0.75rem; font-size: 0.85rem; font-weight: 700;">
+                        1
+                    </span>
+                </span>
+
+                <a th:if="${auditPage.hasNext()}"
+                   th:href="@{/admin/audit(page=${currentPage + 1}, action=${action}, performedBy=${performedBy})}"
+                   class="btn-logout"
+                   style="text-decoration: none; padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    Next &rarr;
+                </a>
+                <span th:if="${!auditPage.hasNext()}"
+                      class="btn-logout"
+                      style="opacity: 0.5; padding: 0.4rem 0.8rem; font-size: 0.85rem; cursor: not-allowed;">
+                    Next &rarr;
+                </span>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

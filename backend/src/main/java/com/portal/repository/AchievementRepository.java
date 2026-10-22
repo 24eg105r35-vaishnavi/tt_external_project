@@ -56,5 +56,64 @@ public interface AchievementRepository extends JpaRepository<Achievement, Long> 
     List<Achievement> findPendingAchievements(@Param("branch") String branch,
                                              @Param("year") Integer year,
                                              @Param("categoryId") Long categoryId);
+
+    // Part 7: search approved achievements with filters and paging
+    @Query(value = "SELECT a FROM Achievement a " +
+                   "JOIN FETCH a.student s " +
+                   "JOIN FETCH s.user u " +
+                   "JOIN FETCH a.category c " +
+                   "WHERE a.status = com.portal.entity.Status.APPROVED " +
+                   "AND (:keyword IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(s.rollNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+                   "AND (:branch IS NULL OR s.branch = :branch) " +
+                   "AND (:year IS NULL OR s.year = :year) " +
+                   "AND (:categoryId IS NULL OR c.id = :categoryId) " +
+                   "AND (:level IS NULL OR a.level = :level) " +
+                   "AND (:fromDate IS NULL OR a.eventDate >= :fromDate) " +
+                   "AND (:toDate IS NULL OR a.eventDate <= :toDate)",
+           countQuery = "SELECT COUNT(a) FROM Achievement a " +
+                   "JOIN a.student s " +
+                   "JOIN s.user u " +
+                   "JOIN a.category c " +
+                   "WHERE a.status = com.portal.entity.Status.APPROVED " +
+                   "AND (:keyword IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(s.rollNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+                   "AND (:branch IS NULL OR s.branch = :branch) " +
+                   "AND (:year IS NULL OR s.year = :year) " +
+                   "AND (:categoryId IS NULL OR c.id = :categoryId) " +
+                   "AND (:level IS NULL OR a.level = :level) " +
+                   "AND (:fromDate IS NULL OR a.eventDate >= :fromDate) " +
+                   "AND (:toDate IS NULL OR a.eventDate <= :toDate)")
+    org.springframework.data.domain.Page<Achievement> searchApprovedAchievements(
+            @Param("keyword") String keyword,
+            @Param("branch") String branch,
+            @Param("year") Integer year,
+            @Param("categoryId") Long categoryId,
+            @Param("level") String level,
+            @Param("fromDate") java.time.LocalDate fromDate,
+            @Param("toDate") java.time.LocalDate toDate,
+            org.springframework.data.domain.Pageable pageable);
+
+    // Part 7: export approved achievements with filters (capped via Pageable)
+    @Query("SELECT a FROM Achievement a " +
+           "JOIN FETCH a.student s " +
+           "JOIN FETCH s.user u " +
+           "JOIN FETCH a.category c " +
+           "WHERE a.status = com.portal.entity.Status.APPROVED " +
+           "AND (:keyword IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(s.rollNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "AND (:branch IS NULL OR s.branch = :branch) " +
+           "AND (:year IS NULL OR s.year = :year) " +
+           "AND (:categoryId IS NULL OR c.id = :categoryId) " +
+           "AND (:level IS NULL OR a.level = :level) " +
+           "AND (:fromDate IS NULL OR a.eventDate >= :fromDate) " +
+           "AND (:toDate IS NULL OR a.eventDate <= :toDate) " +
+           "ORDER BY a.eventDate DESC")
+    List<Achievement> exportApprovedAchievements(
+            @Param("keyword") String keyword,
+            @Param("branch") String branch,
+            @Param("year") Integer year,
+            @Param("categoryId") Long categoryId,
+            @Param("level") String level,
+            @Param("fromDate") java.time.LocalDate fromDate,
+            @Param("toDate") java.time.LocalDate toDate,
+            org.springframework.data.domain.Pageable pageable);
 }
 
