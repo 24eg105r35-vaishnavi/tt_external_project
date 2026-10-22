@@ -3,7 +3,10 @@ package com.portal.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portal.dto.AchievementDto;
+import com.portal.dto.AchievementResponseDto;
+import com.portal.dto.DocumentDto;
 import com.portal.dto.StoredFileInfo;
+import com.portal.dto.VerificationDto;
 import com.portal.entity.Achievement;
 import com.portal.entity.AuditLog;
 import com.portal.entity.Category;
@@ -11,12 +14,14 @@ import com.portal.entity.Document;
 import com.portal.entity.Status;
 import com.portal.entity.Student;
 import com.portal.entity.User;
+import com.portal.entity.Verification;
 import com.portal.repository.AchievementRepository;
 import com.portal.repository.AuditLogRepository;
 import com.portal.repository.CategoryRepository;
 import com.portal.repository.DocumentRepository;
 import com.portal.repository.StudentRepository;
 import com.portal.repository.UserRepository;
+import com.portal.repository.VerificationRepository;
 import com.portal.util.FileStorageException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +45,7 @@ public class AchievementService {
     private final AuditLogRepository auditLogRepository;
     private final FileStorageService fileStorageService;
     private final ObjectMapper objectMapper;
+    private final VerificationRepository verificationRepository;
 
     public AchievementService(AchievementRepository achievementRepository,
                               CategoryRepository categoryRepository,
@@ -48,7 +54,8 @@ public class AchievementService {
                               UserRepository userRepository,
                               AuditLogRepository auditLogRepository,
                               FileStorageService fileStorageService,
-                              ObjectMapper objectMapper) {
+                              ObjectMapper objectMapper,
+                              VerificationRepository verificationRepository) {
         this.achievementRepository = achievementRepository;
         this.categoryRepository = categoryRepository;
         this.documentRepository = documentRepository;
@@ -57,6 +64,7 @@ public class AchievementService {
         this.auditLogRepository = auditLogRepository;
         this.fileStorageService = fileStorageService;
         this.objectMapper = objectMapper;
+        this.verificationRepository = verificationRepository;
     }
 
     // submit achievement with validation, file saving, and audit log in one transaction
@@ -341,7 +349,104 @@ public class AchievementService {
         stats.put("approvedCount", approvedCount);
         stats.put("needsActionCount", needsActionCount);
         stats.put("totalPoints", totalPoints);
-        stats.put("recentAchievements", recent);
+        stats.put("recentAchievements", toDtoList(recent));
         return stats;
+    }
+
+    // converter method from Verification entity to VerificationDto
+    public VerificationDto toVerificationDto(Verification v) {
+        if (v == null) {
+            return null;
+        }
+        VerificationDto dto = new VerificationDto();
+        dto.setId(v.getId());
+        dto.setDecision(v.getDecision() != null ? v.getDecision().name() : null);
+        dto.setReason(v.getReason());
+        dto.setDecidedAt(v.getDecidedAt());
+        if (v.getFaculty() != null && v.getFaculty().getUser() != null) {
+            dto.setVerifierName(v.getFaculty().getUser().getFullName());
+            dto.setVerifierDepartment(v.getFaculty().getDepartment());
+        }
+        return dto;
+    }
+
+    // converter method from Document entity to DocumentDto
+    public DocumentDto toDocumentDto(Document d) {
+        if (d == null) {
+            return null;
+        }
+        DocumentDto dto = new DocumentDto();
+        dto.setId(d.getId());
+        dto.setOriginalName(d.getOriginalName());
+        dto.setFileType(d.getFileType());
+        dto.setFileSize(d.getFileSize());
+        dto.setUploadedAt(d.getUploadedAt());
+        return dto;
+    }
+
+    // converter method from Achievement entity to AchievementResponseDto
+    public AchievementResponseDto toDto(Achievement a) {
+        if (a == null) {
+            return null;
+        }
+        AchievementResponseDto dto = new AchievementResponseDto();
+        dto.setId(a.getId());
+        dto.setTitle(a.getTitle());
+        dto.setDescription(a.getDescription());
+        dto.setLevel(a.getLevel());
+        dto.setEventDate(a.getEventDate());
+        dto.setOrganizer(a.getOrganizer());
+        dto.setExtraData(a.getExtraData());
+        dto.setStatus(a.getStatus() != null ? a.getStatus().name() : null);
+        dto.setPointsAwarded(a.getPointsAwarded());
+        dto.setCreatedAt(a.getCreatedAt());
+
+        if (a.getStudent() != null) {
+            dto.setStudentId(a.getStudent().getId());
+            dto.setRollNumber(a.getStudent().getRollNumber());
+            dto.setBranch(a.getStudent().getBranch());
+            dto.setYear(a.getStudent().getYear());
+            if (a.getStudent().getUser() != null) {
+                dto.setStudentName(a.getStudent().getUser().getFullName());
+            }
+        }
+
+        if (a.getCategory() != null) {
+            dto.setCategoryId(a.getCategory().getId());
+            dto.setCategoryName(a.getCategory().getName());
+        }
+
+        // populate document info
+        List<Document> docs = documentRepository.findByAchievement(a);
+        if (docs != null && !docs.isEmpty()) {
+            Document firstDoc = docs.get(0);
+            dto.setDocumentId(firstDoc.getId());
+            dto.setDocumentOriginalName(firstDoc.getOriginalName());
+            dto.setDocumentFileType(firstDoc.getFileType());
+            dto.setDocumentFileSize(firstDoc.getFileSize());
+        }
+
+        // populate verification timeline
+        if (verificationRepository != null) {
+            List<Verification> verifs = verificationRepository.findByAchievementOrderByDecidedAtDesc(a);
+            List<VerificationDto> vDtos = new ArrayList<>();
+            for (Verification v : verifs) {
+                vDtos.add(toVerificationDto(v));
+            }
+            dto.setVerifications(vDtos);
+        }
+
+        return dto;
+    }
+
+    // converter method for a list of achievements
+    public List<AchievementResponseDto> toDtoList(List<Achievement> achievements) {
+        List<AchievementResponseDto> list = new ArrayList<>();
+        if (achievements != null) {
+            for (Achievement a : achievements) {
+                list.add(toDto(a));
+            }
+        }
+        return list;
     }
 }

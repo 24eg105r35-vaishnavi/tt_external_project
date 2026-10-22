@@ -1,6 +1,7 @@
 package com.portal.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.portal.dto.CategoryDto;
 import com.portal.entity.AuditLog;
 import com.portal.entity.Category;
 import com.portal.repository.AuditLogRepository;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -27,6 +29,40 @@ public class CategoryService {
 
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
+    }
+
+    // converter method from Category entity to CategoryDto
+    public CategoryDto toDto(Category category) {
+        if (category == null) {
+            return null;
+        }
+        CategoryDto dto = new CategoryDto();
+        dto.setId(category.getId());
+        dto.setName(category.getName());
+        dto.setDescription(category.getDescription());
+        dto.setPoints(category.getPoints());
+        dto.setActive(category.isActive());
+        dto.setVerifierDepartment(category.getVerifierDepartment());
+        dto.setFieldSchema(category.getFieldSchema());
+        return dto;
+    }
+
+    public List<CategoryDto> getAllCategoryDtos() {
+        List<Category> list = categoryRepository.findAll();
+        List<CategoryDto> dtoList = new ArrayList<>();
+        for (Category c : list) {
+            dtoList.add(toDto(c));
+        }
+        return dtoList;
+    }
+
+    public List<CategoryDto> getActiveCategoryDtos() {
+        List<Category> list = categoryRepository.findByActiveTrue();
+        List<CategoryDto> dtoList = new ArrayList<>();
+        for (Category c : list) {
+            dtoList.add(toDto(c));
+        }
+        return dtoList;
     }
 
     public Category getCategoryById(Long id) {

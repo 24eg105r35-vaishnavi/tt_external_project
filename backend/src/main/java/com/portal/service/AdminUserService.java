@@ -1,6 +1,8 @@
 package com.portal.service;
 
 import com.portal.dto.FacultyCreateDto;
+import com.portal.dto.UserDto;
+import com.portal.dto.AuditLogDto;
 import com.portal.entity.AuditLog;
 import com.portal.entity.Faculty;
 import com.portal.entity.Role;
@@ -119,5 +121,39 @@ public class AdminUserService {
         log.setPerformedBy(adminEmail);
         log.setCreatedAt(LocalDateTime.now());
         auditLogRepository.save(log);
+    }
+
+    // converter method from User entity to UserDto
+    public UserDto toUserDto(User user) {
+        if (user == null) {
+            return null;
+        }
+        UserDto dto = new UserDto();
+        dto.setId(user.getId());
+        dto.setEmail(user.getEmail());
+        dto.setFullName(user.getFullName());
+        if (user.getRole() != null) {
+            dto.setRole(user.getRole().getName());
+        }
+        dto.setEnabled(user.isEnabled());
+        dto.setCreatedAt(user.getCreatedAt());
+        return dto;
+    }
+
+    // converter method from AuditLog entity to AuditLogDto
+    public AuditLogDto toAuditLogDto(AuditLog log) {
+        if (log == null) {
+            return null;
+        }
+        AuditLogDto dto = new AuditLogDto();
+        dto.setId(log.getId());
+        dto.setAction(log.getAction());
+        dto.setEntityName(log.getEntityName());
+        dto.setEntityId(log.getEntityId());
+        dto.setOldValue(log.getOldValue());
+        dto.setNewValue(log.getNewValue());
+        dto.setPerformedBy(log.getPerformedBy());
+        dto.setCreatedAt(log.getCreatedAt());
+        return dto;
     }
 }

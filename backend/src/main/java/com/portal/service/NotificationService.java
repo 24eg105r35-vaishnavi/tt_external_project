@@ -1,5 +1,6 @@
 package com.portal.service;
 
+import com.portal.dto.NotificationDto;
 import com.portal.entity.Notification;
 import com.portal.entity.User;
 import com.portal.repository.NotificationRepository;
@@ -7,6 +8,7 @@ import com.portal.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -32,6 +34,29 @@ public class NotificationService {
             return 0;
         }
         return notificationRepository.countByUserAndIsReadFalse(user);
+    }
+
+    // converter method from Notification entity to NotificationDto
+    public NotificationDto toDto(Notification n) {
+        if (n == null) {
+            return null;
+        }
+        NotificationDto dto = new NotificationDto();
+        dto.setId(n.getId());
+        dto.setMessage(n.getMessage());
+        dto.setRead(n.isRead());
+        dto.setCreatedAt(n.getCreatedAt());
+        return dto;
+    }
+
+    public List<NotificationDto> toDtoList(List<Notification> list) {
+        List<NotificationDto> dtoList = new ArrayList<>();
+        if (list != null) {
+            for (Notification n : list) {
+                dtoList.add(toDto(n));
+            }
+        }
+        return dtoList;
     }
 
     // get all notifications for a user, newest first

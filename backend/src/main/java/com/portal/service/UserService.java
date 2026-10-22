@@ -1,6 +1,10 @@
 package com.portal.service;
 
 import com.portal.dto.RegisterDto;
+import com.portal.dto.UserDto;
+import com.portal.dto.StudentProfileDto;
+import com.portal.dto.FacultyDto;
+import com.portal.entity.Faculty;
 import com.portal.entity.Role;
 import com.portal.entity.Student;
 import com.portal.entity.User;
@@ -102,5 +106,55 @@ public class UserService {
             counter++;
         }
         return uniqueSlug;
+    }
+
+    // converter method from User entity to UserDto
+    public UserDto toDto(User user) {
+        if (user == null) {
+            return null;
+        }
+        UserDto dto = new UserDto();
+        dto.setId(user.getId());
+        dto.setEmail(user.getEmail());
+        dto.setFullName(user.getFullName());
+        if (user.getRole() != null) {
+            dto.setRole(user.getRole().getName());
+        }
+        dto.setEnabled(user.isEnabled());
+        dto.setCreatedAt(user.getCreatedAt());
+        return dto;
+    }
+
+    // converter method from Student entity to StudentProfileDto
+    public StudentProfileDto toStudentProfileDto(Student student, int totalPoints) {
+        if (student == null) {
+            return null;
+        }
+        StudentProfileDto dto = new StudentProfileDto();
+        dto.setId(student.getId());
+        dto.setRollNumber(student.getRollNumber());
+        dto.setBranch(student.getBranch());
+        dto.setYear(student.getYear());
+        dto.setPhone(student.getPhone());
+        dto.setProfileSlug(student.getProfileSlug());
+        if (student.getVisibility() != null) {
+            dto.setVisibility(student.getVisibility().name());
+        }
+        dto.setTotalPoints(totalPoints);
+        dto.setUser(toDto(student.getUser()));
+        return dto;
+    }
+
+    // converter method from Faculty entity to FacultyDto
+    public FacultyDto toFacultyDto(Faculty faculty) {
+        if (faculty == null) {
+            return null;
+        }
+        FacultyDto dto = new FacultyDto();
+        dto.setId(faculty.getId());
+        dto.setDepartment(faculty.getDepartment());
+        dto.setDesignation(faculty.getDesignation());
+        dto.setUser(toDto(faculty.getUser()));
+        return dto;
     }
 }
