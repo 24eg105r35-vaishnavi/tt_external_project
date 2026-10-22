@@ -1,0 +1,91 @@
+package com.portal.service;
+
+import com.portal.dto.RegisterDto;
+import com.portal.entity.Role;
+import com.portal.entity.Student;
+import com.portal.entity.User;
+import com.portal.entity.Visibility;
+import com.portal.repository.RoleRepository;
+import com.portal.repository.StudentRepository;
+import com.portal.repository.UserRepository;
+import com.portal.util.RegistrationException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class UserService {
+
+    private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Value("${app.allowed-domain:@anurag.edu.in}")
+    private String allowedDomain;
+
+    public UserService(UserRepository userRepository,
+                       StudentRepository studentRepository,
+                       RoleRepository roleRepository,
+                       PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.studentRepository = studentRepository;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Transactional
+    public void registerStudent(RegisterDto dto) {
+        String email = dto.getEmail().trim().toLowerCase();
+
+        // 1. check college domain
+        if (!email.endsWith(allowedDomain.toLowerCase())) {
+            throw new RegistrationException("Only college emails ending with " + allowedDomain + " are allowed.");
+        }
+
+        // 2. check passwords match
+        if (!dto.getPassword().equals(dto.getConfirmPassword())) {
+            throw new RegistrationException("Passwords do not match.");
+        }
+
+        // 3. check duplicate email
+        if (userRepository.existsByEmail(email)) {
+            throw new RegistrationException("Email is already registered. Please login.");
+        }
+
+        // 4. check duplicate roll number
+        String rollNumber = dto.getRollNumber().trim().toUpperCase();
+        if (studentRepository.findByRollNumber(rollNumber).isPresent()) {
+            throw new RegistrationException("Roll number is already registered.");
+        }
+
+        // 5. fetch the STUDENT role
+        Role studentRole = roleRepository.findByName("STUDENT")
+                .orElseThrow(() -> new RegistrationException("STUDENT role not found in database."));
+
+        // 6. create and save User entity (encode password once)
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setFullName(dto.getFullName().trim());
+        user.setEnabled(true);
+        user.setRole(studentRole);
+        User savedUser = userRepository.save(user);
+
+        // 7. create and save Student entity
+        Student student = new Student();
+        student.setRollNumber(rollNumber);
+        student.setBranch(dto.getBranch().trim());
+        student.setYear(dto.getYear());
+        student.setPhone(dto.getPhone().trim());
+
+        // make profile slug: rollNumber-fullName
+        String safeName = dto.getFullName().trim().toLowerCase().replaceAll("[^a-z0-9]", "-");
+        student.setProfileSlug(rollNumber.toLowerCase() + "-" + safeName);
+        student.setVisibility(Visibility.PRIVATE);
+        student.setUser(savedUser);
+
+        studentRepository.save(student);
+    }
+}

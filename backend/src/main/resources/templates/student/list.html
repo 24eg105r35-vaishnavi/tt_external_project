@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>My Achievements - Student Achievement Portal</title>
+</head>
+<body>
+    <section class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h2>My Achievements</h2>
+                <p class="subtitle" style="margin-bottom: 0;">Track the verification status and points of your submitted achievements</p>
+            </div>
+            <div>
+                <a th:href="@{/student/achievements/new}" class="btn-primary" style="text-decoration: none; display: inline-block;">
+                    + Upload New Achievement
+                </a>
+            </div>
+        </div>
+
+        <!-- Success Flash Message -->
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">
+            Achievement submitted successfully!
+        </div>
+
+        <div th:if="${param.error}" class="alert alert-danger">
+            You do not have permission to view that achievement.
+        </div>
+
+        <!-- Achievements Table or Empty State -->
+        <div th:if="${#lists.isEmpty(achievements)}" class="auth-card" style="max-width: 100%; text-align: center; padding: 3rem 1.5rem;">
+            <p style="font-size: 2.5rem; margin-bottom: 0.5rem;">&#127891;</p>
+            <h3 style="color: var(--primary-dark); margin-bottom: 0.5rem;">No Achievements Submitted Yet</h3>
+            <p style="color: var(--muted-color); margin-bottom: 1.5rem;">Upload your certificates, hackathon wins, sports medals, or publications to earn achievement points!</p>
+            <a th:href="@{/student/achievements/new}" class="btn-primary" style="text-decoration: none; display: inline-block; width: auto; padding: 0.65rem 1.5rem;">
+                Upload First Achievement
+            </a>
+        </div>
+
+        <div th:if="${not #lists.isEmpty(achievements)}" class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Title &amp; Category</th>
+                        <th>Level</th>
+                        <th>Event Date</th>
+                        <th>Status</th>
+                        <th>Points</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="ach : ${achievements}">
+                        <td>
+                            <strong th:text="${ach.title}">Smart India Hackathon</strong>
+                            <div style="font-size: 0.85rem; color: var(--muted-color);" th:text="${ach.category.name}">Hackathon</div>
+                        </td>
+                        <td th:text="${ach.level}">NATIONAL</td>
+                        <td th:text="${#temporals.format(ach.eventDate, 'dd MMM yyyy')}">15 Oct 2026</td>
+                        <td>
+                            <span th:if="${ach.status.name() == 'PENDING'}" class="status-badge status-pending">Pending</span>
+                            <span th:if="${ach.status.name() == 'APPROVED'}" class="status-badge status-approved">Approved</span>
+                            <span th:if="${ach.status.name() == 'REJECTED'}" class="status-badge status-rejected">Rejected</span>
+                            <span th:if="${ach.status.name() == 'NEEDS_CORRECTION'}" class="status-badge status-needs-correction">Needs Correction</span>
+                        </td>
+                        <td>
+                            <strong th:text="${ach.pointsAwarded} + ' pts'">0 pts</strong>
+                        </td>
+                        <td>
+                            <a th:href="@{/student/achievements/{id}(id=${ach.id})}" style="color: var(--primary); font-weight: 600; text-decoration: none;">
+                                View Details &rarr;
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</body>
+</html>

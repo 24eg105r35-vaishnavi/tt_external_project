@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Login - Student Achievement Portal</title>
+</head>
+<body>
+    <section class="container auth-wrapper">
+        <div class="auth-card">
+            <h2>Sign In</h2>
+            <p class="subtitle">Enter your college email and password to access your portal</p>
+
+            <!-- Alerts for login status -->
+            <div th:if="${param.error}" class="alert alert-danger">
+                Invalid email or password. Please try again.
+            </div>
+
+            <div th:if="${param.logout}" class="alert alert-success">
+                You have been successfully logged out.
+            </div>
+
+            <div th:if="${param.registered}" class="alert alert-success">
+                Registration successful! Please sign in with your credentials.
+            </div>
+
+            <form th:action="@{/login}" method="post">
+                <div class="form-group">
+                    <label for="email">College Email</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="name@anurag.edu.in" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="btn-primary">Sign In</button>
+            </form>
+
+            <div class="auth-footer">
+                Don't have an account? <a th:href="@{/register}">Register here</a>
+            </div>
+
+            <!-- Demo test credentials helper -->
+            <div style="margin-top: 1.5rem; padding: 1rem; background-color: var(--slate-100, #f1f5f9); border-radius: 8px; font-size: 0.85rem; border: 1px solid var(--slate-200, #e2e8f0);">
+                <strong style="color: var(--slate-800, #1e293b); display: block; margin-bottom: 0.5rem;">&#128273; Pre-seeded Test Accounts:</strong>
+                <div style="margin-bottom: 0.25rem;"><strong>Admin:</strong> admin@anurag.edu.in | <code>admin123</code></div>
+                <div style="margin-bottom: 0.25rem;"><strong>Faculty:</strong> faculty@anurag.edu.in | <code>faculty123</code></div>
+                <div><strong>Student:</strong> student@anurag.edu.in | <code>student123</code></div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

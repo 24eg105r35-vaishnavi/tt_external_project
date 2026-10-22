@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Student Dashboard - Student Achievement Portal</title>
+</head>
+<body>
+    <section class="container">
+        <div class="dashboard-header">
+            <span class="badge">Student Portal</span>
+            <h1>Welcome, <span th:text="${fullName}">Student Name</span>!</h1>
+            <p>Signed in as <strong th:text="${email}">email@anurag.edu.in</strong> (Role: <span th:text="${role}">STUDENT</span>)</p>
+        </div>
+
+        <div class="cards-grid">
+            <div class="card">
+                <h3>My Achievements</h3>
+                <p>Track your submitted achievements, current verification status, and points awarded.</p>
+                <a th:href="@{/student/achievements}" class="btn-primary" style="text-decoration: none; display: inline-block; margin-top: 1rem; width: auto; font-size: 0.9rem; padding: 0.5rem 1rem;">
+                    View My Achievements &rarr;
+                </a>
+            </div>
+            <div class="card">
+                <h3>Upload Achievement</h3>
+                <p>Submit certificate proofs, hackathons, sports wins, and internships for verification.</p>
+                <a th:href="@{/student/achievements/new}" class="btn-primary" style="text-decoration: none; display: inline-block; margin-top: 1rem; width: auto; font-size: 0.9rem; padding: 0.5rem 1rem;">
+                    + Submit New Achievement
+                </a>
+            </div>
+            <div class="card">
+                <h3>My Public Profile</h3>
+                <p>Manage your public achievement portfolio and shareable student profile URL. (Coming in Part 5)</p>
+                <span class="badge" style="margin-top: 1rem;">Coming Soon</span>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

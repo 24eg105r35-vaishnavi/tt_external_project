@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Faculty Dashboard - Student Achievement Portal</title>
+</head>
+<body>
+    <section class="container">
+        <div class="dashboard-header">
+            <span class="badge">Faculty Portal</span>
+            <h1>Welcome, <span th:text="${fullName}">Faculty Name</span>!</h1>
+            <p>Signed in as <strong th:text="${email}">faculty@anurag.edu.in</strong> (Role: <span th:text="${role}">FACULTY</span>)</p>
+        </div>
+
+        <div class="cards-grid">
+            <div class="card">
+                <h3>Pending Verifications</h3>
+                <p>Review student achievement submissions assigned to your department. (Part 4)</p>
+            </div>
+            <div class="card">
+                <h3>Verification History</h3>
+                <p>Check previously approved or rejected achievement certificates and feedback. (Part 4)</p>
+            </div>
+            <div class="card">
+                <h3>Department Summary</h3>
+                <p>Track student performance metrics across technical events and competitions. (Part 5)</p>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

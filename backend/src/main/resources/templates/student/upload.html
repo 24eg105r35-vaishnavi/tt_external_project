@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Upload Achievement - Student Achievement Portal</title>
+</head>
+<body>
+    <section class="container">
+        <div class="form-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                    <h2>Submit Achievement</h2>
+                    <p class="subtitle" style="margin-bottom: 0;">Upload your certificate or proof to submit for faculty verification</p>
+                </div>
+                <a th:href="@{/student/achievements}" class="btn-logout" style="text-decoration: none;">&larr; My Achievements</a>
+            </div>
+
+            <!-- Server Error Alert -->
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">
+                An error occurred while submitting your achievement.
+            </div>
+
+            <div th:if="${fileError}" class="alert alert-danger" th:text="${fileError}">
+                Please select a valid proof document.
+            </div>
+
+            <form th:action="@{/student/achievements}" th:object="${achievementDto}" method="post" enctype="multipart/form-data">
+                
+                <!-- Section 1: Core Achievement Information -->
+                <h3 class="form-section-title" style="margin-top: 0;">1. Core Achievement Details</h3>
+
+                <div class="form-group">
+                    <label for="categoryId">Category <span style="color:var(--danger-color)">*</span></label>
+                    <select id="categoryId" th:field="*{categoryId}" class="form-control" required>
+                        <option value="">-- Choose Achievement Category --</option>
+                        <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name} + ' (' + ${cat.points} + ' pts)'"></option>
+                    </select>
+                    <span class="field-error" th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="title">Achievement Title <span style="color:var(--danger-color)">*</span></label>
+                    <input type="text" id="title" th:field="*{title}" class="form-control" placeholder="e.g. 1st Place at Smart India Hackathon" required>
+                    <span class="field-error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="level">Achievement Level <span style="color:var(--danger-color)">*</span></label>
+                        <select id="level" th:field="*{level}" class="form-control" required>
+                            <option value="">-- Select Level --</option>
+                            <option th:each="lvl : ${levels}" th:value="${lvl}" th:text="${lvl}"></option>
+                        </select>
+                        <span class="field-error" th:if="${#fields.hasErrors('level')}" th:errors="*{level}"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eventDate">Event Date <span style="color:var(--danger-color)">*</span></label>
+                        <input type="date" id="eventDate" th:field="*{eventDate}" class="form-control" required>
+                        <span class="field-error" th:if="${#fields.hasErrors('eventDate')}" th:errors="*{eventDate}"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="organizer">Organizing Body / Institute <span style="color:var(--danger-color)">*</span></label>
+                    <input type="text" id="organizer" th:field="*{organizer}" class="form-control" placeholder="e.g. AICTE / IIT Bombay / College Tech Club" required>
+                    <span class="field-error" th:if="${#fields.hasErrors('organizer')}" th:errors="*{organizer}"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description / Notes (Optional)</label>
+                    <textarea id="description" th:field="*{description}" class="form-control" rows="3" placeholder="Briefly describe your project or contribution..."></textarea>
+                    <span class="field-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></span>
+                </div>
+
+                <!-- Section 2: Dynamic Category Specific Fields -->
+                <div id="extraFieldsContainer"></div>
+
+                <!-- Section 3: Proof Document Upload -->
+                <h3 class="form-section-title">2. Proof Document / Certificate</h3>
+
+                <div class="form-group">
+                    <label for="proofFile">Upload File (PDF, PNG, JPG, max 10MB) <span style="color:var(--danger-color)">*</span></label>
+                    <input type="file" id="proofFile" name="file" class="form-control" accept="image/*,application/pdf" capture="environment" required>
+                    <small style="color: var(--muted-color); display: block; margin-top: 0.35rem;">
+                        Supported: PDF certificates, photos taken with phone camera, or scanned images.
+                    </small>
+
+                    <!-- Client side error message -->
+                    <div id="clientFileError" class="field-error" style="display: none; margin-top: 0.5rem;"></div>
+
+                    <!-- File preview card -->
+                    <div id="filePreview" class="file-preview">
+                        <div id="previewName"></div>
+                        <img id="previewImg" alt="Preview Image" style="display: none;">
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn-primary" style="margin-top: 1rem;">
+                    Submit Achievement for Verification
+                </button>
+            </form>
+        </div>
+
+        <script th:src="@{/js/student-upload.js}"></script>
+    </section>
+</body>
+</html>

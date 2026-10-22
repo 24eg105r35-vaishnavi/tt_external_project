@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::section})}">
+<head>
+    <title th:text="${achievement.title} + ' - Achievement Detail'">Achievement Detail</title>
+</head>
+<body>
+    <section class="container">
+        <div class="form-card" style="max-width: 800px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <div style="margin-bottom: 0.5rem;">
+                        <span th:if="${achievement.status.name() == 'PENDING'}" class="status-badge status-pending">Status: Pending Verification</span>
+                        <span th:if="${achievement.status.name() == 'APPROVED'}" class="status-badge status-approved">Status: Approved</span>
+                        <span th:if="${achievement.status.name() == 'REJECTED'}" class="status-badge status-rejected">Status: Rejected</span>
+                        <span th:if="${achievement.status.name() == 'NEEDS_CORRECTION'}" class="status-badge status-needs-correction">Status: Needs Correction</span>
+                    </div>
+                    <h2 style="margin-bottom: 0.25rem;" th:text="${achievement.title}">Achievement Title</h2>
+                    <p class="subtitle" style="margin-bottom: 0;">
+                        Category: <strong th:text="${achievement.category.name}">Category</strong> |
+                        Submitted on: <span th:text="${#temporals.format(achievement.createdAt, 'dd MMM yyyy, HH:mm')}">Date</span>
+                    </p>
+                </div>
+                <a th:href="@{/student/achievements}" class="btn-logout" style="text-decoration: none;">&larr; Back to My List</a>
+            </div>
+
+            <!-- Core Details Grid -->
+            <h3 class="form-section-title" style="margin-top: 0;">Achievement Information</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Category</span>
+                    <span class="detail-value" th:text="${achievement.category.name} + ' (Max ' + ${achievement.category.points} + ' pts)'">Hackathon</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Achievement Level</span>
+                    <span class="detail-value" th:text="${achievement.level}">NATIONAL</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Event Date</span>
+                    <span class="detail-value" th:text="${#temporals.format(achievement.eventDate, 'dd MMMM yyyy')}">15 October 2026</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Organizer / Body</span>
+                    <span class="detail-value" th:text="${achievement.organizer}">AICTE</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Points Awarded</span>
+                    <span class="detail-value" style="color: var(--primary);" th:text="${achievement.pointsAwarded} + ' Points (Awarded after faculty review)'">0 Points</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Verification Department</span>
+                    <span class="detail-value" th:text="${achievement.category.verifierDepartment}">CSE</span>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div th:if="${achievement.description != null and !#strings.isEmpty(achievement.description)}" class="form-group" style="margin-top: 1rem;">
+                <h3 class="form-section-title">Description &amp; Contribution</h3>
+                <div style="background: var(--slate-50, #f8fafc); border: 1px solid var(--border-color); border-radius: 6px; padding: 1rem; color: var(--slate-800, #1e293b); font-size: 0.95rem; line-height: 1.6;"
+                     th:text="${achievement.description}">
+                    Project description goes here...
+                </div>
+            </div>
+
+            <!-- Dynamic Category Extra Fields -->
+            <div th:if="${not #maps.isEmpty(extraFieldsMap)}" style="margin-top: 1rem;">
+                <h3 class="form-section-title">Category-Specific Details</h3>
+                <div class="detail-grid">
+                    <div th:each="entry : ${extraFieldsMap}" class="detail-item">
+                        <span class="detail-label" th:text="${entry.key}">Field Name</span>
+                        <span class="detail-value" th:text="${entry.value}">Field Value</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proof Documents -->
+            <h3 class="form-section-title">Attached Proof Documents</h3>
+            <div th:if="${#lists.isEmpty(documents)}" style="color: var(--muted-color); font-size: 0.9rem;">
+                No proof documents attached.
+            </div>
+
+            <div th:if="${not #lists.isEmpty(documents)}" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <div th:each="doc : ${documents}" style="display: flex; justify-content: space-between; align-items: center; background: var(--slate-50, #f8fafc); border: 1px solid var(--border-color); border-radius: 6px; padding: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                    <div>
+                        <div style="font-weight: 600; color: var(--slate-800, #1e293b);" th:text="${doc.originalName}">certificate.pdf</div>
+                        <div style="font-size: 0.8rem; color: var(--muted-color);">
+                            Size: <span th:text="${#numbers.formatDecimal(doc.fileSize / 1024.0, 1, 1)} + ' KB'">120 KB</span> |
+                            Uploaded: <span th:text="${#temporals.format(doc.uploadedAt, 'dd MMM yyyy, HH:mm')}">Date</span>
+                        </div>
+                    </div>
+                    <a th:href="@{/student/documents/{id}(id=${doc.id})}" target="_blank" class="btn-primary" style="text-decoration: none; width: auto; padding: 0.45rem 1rem; font-size: 0.85rem;">
+                        &#128065; View Document
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

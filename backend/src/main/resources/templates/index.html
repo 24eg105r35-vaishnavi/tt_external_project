@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Home - Student Achievement Portal</title>
+</head>
+<body>
+    <section class="container">
+        <div class="hero">
+            <span class="badge" th:text="${currentPhase}">Part 3: Authentication &amp; Roles</span>
+            <h1 th:text="${appName}">Student Achievement Portal</h1>
+            <p>Academic record &amp; achievement management platform for Anurag University.</p>
+        </div>
+
+        <div class="status-box">
+            <h3 th:text="${portalStatus}">System Status: Online</h3>
+            <div class="status-grid">
+                <div class="status-item">
+                    <span class="label">Time</span>
+                    <span class="value" th:text="${serverTime}">12:00:00</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Security</span>
+                    <span class="value">Spring Security 6 (Active)</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Database</span>
+                    <span class="value">MySQL 8 Connected</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Allowed Domain</span>
+                    <span class="value">@anurag.edu.in</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="cards-grid">
+            <div class="card">
+                <h3>Student Portal</h3>
+                <p>Register with your @anurag.edu.in email to upload and track your achievements.</p>
+                <div sec:authorize="isAnonymous()" style="margin-top: 1rem;">
+                    <a th:href="@{/register}" style="color: var(--primary); font-weight: 600; text-decoration: none;">Register as Student &rarr;</a>
+                </div>
+                <div sec:authorize="hasRole('STUDENT')" style="margin-top: 1rem;">
+                    <a th:href="@{/student/dashboard}" style="color: var(--primary); font-weight: 600; text-decoration: none;">Go to Student Dashboard &rarr;</a>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Faculty Portal</h3>
+                <p>Verify certificates and assign achievement points based on department guidelines.</p>
+                <div sec:authorize="isAnonymous()" style="margin-top: 1rem;">
+                    <a th:href="@{/login}" style="color: var(--primary); font-weight: 600; text-decoration: none;">Faculty Login &rarr;</a>
+                </div>
+                <div sec:authorize="hasRole('FACULTY')" style="margin-top: 1rem;">
+                    <a th:href="@{/faculty/dashboard}" style="color: var(--primary); font-weight: 600; text-decoration: none;">Go to Faculty Dashboard &rarr;</a>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Administrator</h3>
+                <p>Manage system categories, track verification audit logs, and export reports.</p>
+                <div sec:authorize="isAnonymous()" style="margin-top: 1rem;">
+                    <a th:href="@{/login}" style="color: var(--primary); font-weight: 600; text-decoration: none;">Admin Login &rarr;</a>
+                </div>
+                <div sec:authorize="hasRole('ADMIN')" style="margin-top: 1rem;">
+                    <a th:href="@{/admin/dashboard}" style="color: var(--primary); font-weight: 600; text-decoration: none;">Go to Admin Dashboard &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

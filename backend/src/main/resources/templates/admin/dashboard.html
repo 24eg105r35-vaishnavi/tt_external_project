@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Admin Dashboard - Student Achievement Portal</title>
+</head>
+<body>
+    <section class="container">
+        <div class="dashboard-header">
+            <span class="badge">Admin Portal</span>
+            <h1>Welcome, <span th:text="${fullName}">Admin Name</span>!</h1>
+            <p>Signed in as <strong th:text="${email}">admin@anurag.edu.in</strong> (Role: <span th:text="${role}">ADMIN</span>)</p>
+        </div>
+
+        <div class="cards-grid">
+            <div class="card">
+                <h3>User Management</h3>
+                <p>Manage student and faculty accounts, permissions, and status. (Part 5)</p>
+            </div>
+            <div class="card">
+                <h3>Category Settings</h3>
+                <p>Configure achievement categories, points weighting, and verifier departments. (Part 5)</p>
+            </div>
+            <div class="card">
+                <h3>Audit Logs &amp; Reports</h3>
+                <p>Inspect system activity logs, verification histories, and export college reports. (Part 5)</p>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

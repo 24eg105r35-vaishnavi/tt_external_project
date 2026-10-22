@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <header th:fragment="header" class="site-header">
+        <div class="container header-container">
+            <a th:href="@{/}" class="logo">&#127891; Student Achievement Portal</a>
+            <ul class="nav-links">
+                <li><a th:href="@{/}">Home</a></li>
+
+                <!-- Links for Logged Out Users -->
+                <li sec:authorize="isAnonymous()">
+                    <a th:href="@{/login}">Login</a>
+                </li>
+                <li sec:authorize="isAnonymous()">
+                    <a th:href="@{/register}">Register</a>
+                </li>
+
+                <!-- Role Specific Dashboard Links -->
+                <li sec:authorize="hasRole('STUDENT')">
+                    <a th:href="@{/student/dashboard}">Dashboard</a>
+                </li>
+                <li sec:authorize="hasRole('STUDENT')">
+                    <a th:href="@{/student/achievements}">Achievements</a>
+                </li>
+                <li sec:authorize="hasRole('STUDENT')">
+                    <a th:href="@{/student/achievements/new}">+ Upload</a>
+                </li>
+                <li sec:authorize="hasRole('FACULTY')">
+                    <a th:href="@{/faculty/dashboard}">Dashboard</a>
+                </li>
+                <li sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/admin/dashboard}">Dashboard</a>
+                </li>
+
+                <!-- User Name and Logout Form for Logged In Users -->
+                <li sec:authorize="isAuthenticated()">
+                    <span class="nav-user" sec:authentication="name">User</span>
+                </li>
+                <li sec:authorize="isAuthenticated()">
+                    <form th:action="@{/logout}" method="post" style="display:inline;">
+                        <button type="submit" class="btn-logout">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </header>
+</body>
+</html>

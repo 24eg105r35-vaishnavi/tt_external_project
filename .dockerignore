@@ -1,0 +1,8 @@
+target/
+.git/
+.gitignore
+.env
+*.md
+mysql-setup.sql
+.idea/
+.DS_Store

@@ -1,0 +1,30 @@
+# Compiled class files
+target/
+**/target/
+*.class
+
+# Log files
+*.log
+
+# Sensitive environment configuration
+.env
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# IDE and OS files
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+.factorypath
+.DS_Store
+
+# Local uploads folder if created locally
+uploads/
+**/uploads/
+
