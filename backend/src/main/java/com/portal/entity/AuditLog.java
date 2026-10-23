@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 @Table(name = "audit_logs")
 @Getter
 @Setter
-@NoArgsConstructor
 public class AuditLog {
 
     // Default no-argument constructor required by Hibernate

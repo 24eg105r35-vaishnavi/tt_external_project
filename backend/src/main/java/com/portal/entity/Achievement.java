@@ -22,7 +22,6 @@ import java.time.LocalDateTime;
 @Table(name = "achievements")
 @Getter
 @Setter
-@NoArgsConstructor
 public class Achievement {
 
     // Default no-argument constructor required by Hibernate

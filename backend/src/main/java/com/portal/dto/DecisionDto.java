@@ -7,7 +7,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
 public class DecisionDto {
 
     // Decision action: APPROVE, REJECT, or SEND_BACK

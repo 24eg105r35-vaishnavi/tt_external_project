@@ -19,7 +19,6 @@ import lombok.Setter;
 @Table(name = "students")
 @Getter
 @Setter
-@NoArgsConstructor
 public class Student {
 
     // Default no-argument constructor required by Hibernate

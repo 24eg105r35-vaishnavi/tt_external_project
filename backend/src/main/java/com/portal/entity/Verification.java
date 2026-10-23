@@ -21,7 +21,6 @@ import java.time.LocalDateTime;
 @Table(name = "verifications")
 @Getter
 @Setter
-@NoArgsConstructor
 public class Verification {
 
     // Default no-argument constructor required by Hibernate

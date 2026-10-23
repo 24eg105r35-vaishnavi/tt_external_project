@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 @Table(name = "users")
 @Getter
 @Setter
-@NoArgsConstructor
 public class User {
 
     // Default no-argument constructor required by Hibernate

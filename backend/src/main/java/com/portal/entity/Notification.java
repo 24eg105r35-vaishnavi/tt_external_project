@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 @Table(name = "notifications")
 @Getter
 @Setter
-@NoArgsConstructor
 public class Notification {
 
     // Default no-argument constructor required by Hibernate
