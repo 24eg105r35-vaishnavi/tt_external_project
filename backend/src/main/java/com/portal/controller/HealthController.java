@@ -9,11 +9,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api")
 public class HealthController {
 
+    // root endpoint to prevent 404/500 when opening the backend domain directly
+    @GetMapping("/")
+    public ResponseEntity<Map<String, String>> rootIndex() {
+        Map<String, String> response = new HashMap<>();
+        response.put("status", "UP");
+        response.put("message", "Student Achievement Portal REST API is running.");
+        response.put("healthCheck", "/api/health");
+        return ResponseEntity.ok(response);
+    }
+
     // test endpoint to verify backend connectivity and CORS from frontend
-    @GetMapping("/health")
+    @GetMapping("/api/health")
     public ResponseEntity<Map<String, String>> healthCheck() {
         Map<String, String> response = new HashMap<>();
         response.put("status", "UP");
