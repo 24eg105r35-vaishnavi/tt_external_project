@@ -16,8 +16,9 @@ export default function HomePage() {
         setHealth(res.data);
         setLoading(false);
       })
-      .catch(() => {
-        setError('Could not connect to backend REST API. Ensure Spring Boot is running on port 8080.');
+      .catch((err) => {
+        const target = api.defaults.baseURL || 'backend';
+        setError(`Could not connect to backend at ${target}. (Error: ${err.message || 'Network error'})`);
         setLoading(false);
       });
   };
